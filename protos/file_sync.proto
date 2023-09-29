@@ -1,0 +1,25 @@
+syntax = "proto3";
+import "plugin.proto";
+import "google/protobuf/wrappers.proto";
+
+service FileSync
+{
+  rpc SyncFile (stream FilePart) returns (google.protobuf.BoolValue) {}
+  rpc CheckVersion (File) returns (google.protobuf.BoolValue) {}
+  rpc GetFile (File) returns (File) {}
+  rpc UploadFile (File) returns (google.protobuf.BoolValue) {}
+}
+
+message File
+{
+  string name = 1;
+  string hash = 2;
+  optional bytes data = 3;
+}
+
+message FilePart
+{
+  bytes data = 1;
+  string hash = 2;
+  int32 part = 3;
+}
