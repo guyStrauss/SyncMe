@@ -10,13 +10,13 @@ logger = logging.getLogger(__name__)
 
 
 class MongoDatabase(MetadataDatabase):
-    def __init__(self):
+    def __init__(self, collection_name: str = "metadata"):
         """
         Initialize the database.
         """
         self.client = MongoClient('localhost', 27017)
-        self.db = self.client['metadata']
-        self.collection = self.db['metadata']
+        self.db = self.client[collection_name]
+        self.collection = self.db[collection_name]
         logger.info("Database initialized.")
 
     def insert_metadata(self, metadata: FileMetadata) -> str:
@@ -27,6 +27,7 @@ class MongoDatabase(MetadataDatabase):
         :rtype: str
         """
         logger.info("Inserting metadata into the database.")
+        # Override the id with the hash of the file.
         return self.collection.insert_one(metadata.model_dump()).inserted_id
 
     def get_metadata(self, file_hash: str) -> FileMetadata:
@@ -47,10 +48,15 @@ class MongoDatabase(MetadataDatabase):
         :rtype: bool
         """
         logger.info("Updating metadata in the database.")
-        return self.collection.update_one({"file_hash": metadata.file_hash},
-                                          {"$set": metadata.model_dump()}).modified_count > 0
+        try:
+            self.delete_metadata(metadata.hash)
+            self.insert_metadata(metadata)
+        except Exception as e:
+            logger.error("Error while updating the metadata: {}".format(e))
+            return False
+        return True
 
-    def delete_metadata(self, file_id: str) -> bool:
+    def delete_metadata(self, file_hash: str) -> bool:
         """
         Delete the metadata of the file.
         :param file_id: The hash of the file.
@@ -58,4 +64,4 @@ class MongoDatabase(MetadataDatabase):
         :rtype: bool
         """
         logger.info("Deleting metadata from the database.")
-        return self.collection.delete_one({"file_id": file_id}).deleted_count > 0
+        return self.collection.delete_one({"_id": file_hash}).deleted_count > 0
