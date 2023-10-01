@@ -3,6 +3,7 @@ from pydantic import BaseModel
 
 
 class FileChange(BaseModel):
+    """ A model representing a file change."""
     offset: int
     size: int
-    change: bytes
+    data: bytes
