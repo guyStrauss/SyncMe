@@ -10,9 +10,9 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         super().__init__(*args, **kwargs)
         self._logger = logging.getLogger(__name__)
 
-    def GetFile(self, request, context):
+    def GetFile(self, request: file_sync_pb2.FileRequest, context):
         self._logger.info("GetFile called")
-        print(request.name)
+        print(request.hash)
 
 
 def serve():
