@@ -6,8 +6,7 @@ from datetime import datetime
 
 
 class FileMetadata(BaseModel):
-    latest_version: int
-    file_name: str
-    file_hash: str
-    file_path: str
+    user_id: int
+    hash: str
+    path: str
     last_modified: datetime

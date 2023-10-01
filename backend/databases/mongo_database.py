@@ -37,7 +37,7 @@ class MongoDatabase(MetadataDatabase):
         :rtype: FileMetadata
         """
         logger.info("Getting metadata from the database.")
-        return FileMetadata(**self.collection.find_one({"file_hash": file_hash}))
+        return FileMetadata(**self.collection.find_one({"hash": file_hash}))
 
     def update_metadata(self, metadata: FileMetadata) -> bool:
         """
