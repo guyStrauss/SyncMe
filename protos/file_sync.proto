@@ -5,15 +5,15 @@ service FileSync
 {
   rpc doesFileExists (File) returns (google.protobuf.BoolValue) {}
   rpc SyncFile (stream FilePart) returns (stream FilePart) {}
-  rpc CheckVersion (compactFile) returns (google.protobuf.BoolValue) {}
-  rpc GetFile (File) returns (File) {}
+  rpc CheckVersion (FileRequest) returns (google.protobuf.BoolValue) {}
+  rpc GetFile (FileRequest) returns (File) {}
   rpc UploadFile (File) returns (google.protobuf.BoolValue) {}
 }
 
-message compactFile
+
+message FileRequest
 {
   string hash = 1;
-  string name = 2;
 }
 
 message File
