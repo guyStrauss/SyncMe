@@ -1,9 +1,11 @@
 """
 Specific implementation of the database interface for MongoDB.
 """
-from typing import List
+import logging
 from pymongo import MongoClient
 from backend.databases.base.metadata_database import MetadataDatabase
+
+logger = logging.getLogger(__name__)
 
 
 class Database(MetadataDatabase):
@@ -11,8 +13,8 @@ class Database(MetadataDatabase):
         """
         Initialize the database.
         """
-        # Connecting to the database and collection
         self.client = MongoClient('localhost', 27017)
         self.db = self.client['metadata']
         self.collection = self.db['metadata']
-
+        logger.info("Database initialized.")
+        
