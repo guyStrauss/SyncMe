@@ -15,6 +15,8 @@ class FilesystemDatabase(StorageDatabase):
         :param root_path: The root path of the files.
         """
         self.root_path = root_path
+        if not os.path.exists(root_path):
+            os.makedirs(root_path)
 
     def get_file(self, user_id: str, file_id: str, file_offset: int = None, block_size: int = None) -> bytes:
         """
