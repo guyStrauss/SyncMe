@@ -31,7 +31,6 @@ class MongoTests(unittest.TestCase):
         server.update_metadata(metadata)
         self.assertEqual(server.get_metadata(new_hash).path, new_name)
         self.assertEqual(server.get_metadata(new_hash).hash, new_hash)
-        print(server.get_metadata(FILE_HASH).path)
 
 
 if __name__ == '__main__':
