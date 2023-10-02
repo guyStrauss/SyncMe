@@ -25,18 +25,18 @@ class MongoTests(unittest.TestCase):
 
     def test_insert(self):
         metadata = FileMetadata(path=FILE_NAME, hash=FILE_HASH, user_id=UESR_ID, last_modified=datetime.now())
-        server.insert_metadata(metadata)
-        self.assertEqual(server.get_metadata("1234").path, FILE_NAME)
+        inserted_id = server.insert_metadata(metadata)
+        self.assertEqual(server.get_metadata(inserted_id).path, FILE_NAME)
 
     def test_update(self):
         new_name = "this is a new name.txt"
         new_hash = "5678"
         metadata = FileMetadata(path=FILE_NAME, hash=FILE_HASH, user_id=UESR_ID, last_modified=datetime.now())
-        server.insert_metadata(metadata)
+        inserted_id = server.insert_metadata(metadata)
         metadata = FileMetadata(path=new_name, hash=new_hash, user_id=UESR_ID, last_modified=datetime.now())
-        server.update_metadata(metadata)
-        self.assertEqual(server.get_metadata(new_hash).path, new_name)
-        self.assertEqual(server.get_metadata(new_hash).hash, new_hash)
+        server.update_metadata(inserted_id, metadata)
+        self.assertEqual(server.get_metadata(inserted_id).path, new_name)
+        self.assertEqual(server.get_metadata(inserted_id).hash, new_hash)
 
     def test_get_all_metadata(self):
         records = [FileMetadata(path=f"{i}_{FILE_NAME}", hash=FILE_HASH, user_id=UESR_ID, last_modified=datetime.now())

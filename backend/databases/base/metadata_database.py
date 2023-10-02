@@ -1,6 +1,8 @@
 """
 This class will be responsible for the database metadata store and the interface for
 """
+from bson import ObjectId
+
 from backend.models.file_medadata import FileMetadata
 
 
@@ -23,9 +25,10 @@ class MetadataDatabase(object):
         """
         raise NotImplementedError("This method is not implemented yet.")
 
-    def update_metadata(self, metadata: FileMetadata) -> bool:
+    def update_metadata(self, file_id: str, metadata: FileMetadata) -> bool:
         """
         Update the metadata of the file.
+        :param file_id: The id of the file.
         :param metadata: The metadata of the file.
         :return: The id of the file.
         :rtype: bool

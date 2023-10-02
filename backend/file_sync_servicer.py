@@ -28,14 +28,12 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
 
         return file_sync_pb2.File(name=metadata.path, data=file)
 
-    def check_version(self, request: file_sync_pb2.FileRequest, context):
+    def check_version(self, request: file_sync_pb2.CompareHash, context):
         """
         Check if the file is the latest version.
         """
         self._logger.info("check_version called with hash: %s", request.hash)
         metadata = self.metadata_db.get_metadata(request.hash)
-        if request.user_id != metadata.user_id:
-            context.abort(grpc.StatusCode.PERMISSION_DENIED, "User id does not match the file id.")
         return metadata.hash == request.hash
 
     def does_file_exist(self, request: file_sync_pb2.FileRequest, context):
