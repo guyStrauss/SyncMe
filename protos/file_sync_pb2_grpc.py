@@ -15,28 +15,28 @@ class FileSyncStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.doesFileExists = channel.unary_unary(
-                '/FileSync/doesFileExists',
+        self.does_file_exist = channel.unary_unary(
+                '/FileSync/does_file_exist',
                 request_serializer=file__sync__pb2.File.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
                 )
-        self.SyncFile = channel.stream_stream(
-                '/FileSync/SyncFile',
+        self.sync_file = channel.stream_stream(
+                '/FileSync/sync_file',
                 request_serializer=file__sync__pb2.FilePart.SerializeToString,
                 response_deserializer=file__sync__pb2.FilePart.FromString,
                 )
-        self.CheckVersion = channel.unary_unary(
-                '/FileSync/CheckVersion',
+        self.check_version = channel.unary_unary(
+                '/FileSync/check_version',
                 request_serializer=file__sync__pb2.FileRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
                 )
-        self.GetFile = channel.unary_unary(
-                '/FileSync/GetFile',
+        self.get_file = channel.unary_unary(
+                '/FileSync/get_file',
                 request_serializer=file__sync__pb2.FileRequest.SerializeToString,
                 response_deserializer=file__sync__pb2.File.FromString,
                 )
-        self.UploadFile = channel.unary_unary(
-                '/FileSync/UploadFile',
+        self.upload_file = channel.unary_unary(
+                '/FileSync/upload_file',
                 request_serializer=file__sync__pb2.File.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
                 )
@@ -45,31 +45,31 @@ class FileSyncStub(object):
 class FileSyncServicer(object):
     """Missing associated documentation comment in .proto file."""
 
-    def doesFileExists(self, request, context):
+    def does_file_exist(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def SyncFile(self, request_iterator, context):
+    def sync_file(self, request_iterator, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def CheckVersion(self, request, context):
+    def check_version(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def GetFile(self, request, context):
+    def get_file(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def UploadFile(self, request, context):
+    def upload_file(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -78,28 +78,28 @@ class FileSyncServicer(object):
 
 def add_FileSyncServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'doesFileExists': grpc.unary_unary_rpc_method_handler(
-                    servicer.doesFileExists,
+            'does_file_exist': grpc.unary_unary_rpc_method_handler(
+                    servicer.does_file_exist,
                     request_deserializer=file__sync__pb2.File.FromString,
                     response_serializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.SerializeToString,
             ),
-            'SyncFile': grpc.stream_stream_rpc_method_handler(
-                    servicer.SyncFile,
+            'sync_file': grpc.stream_stream_rpc_method_handler(
+                    servicer.sync_file,
                     request_deserializer=file__sync__pb2.FilePart.FromString,
                     response_serializer=file__sync__pb2.FilePart.SerializeToString,
             ),
-            'CheckVersion': grpc.unary_unary_rpc_method_handler(
-                    servicer.CheckVersion,
+            'check_version': grpc.unary_unary_rpc_method_handler(
+                    servicer.check_version,
                     request_deserializer=file__sync__pb2.FileRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.SerializeToString,
             ),
-            'GetFile': grpc.unary_unary_rpc_method_handler(
-                    servicer.GetFile,
+            'get_file': grpc.unary_unary_rpc_method_handler(
+                    servicer.get_file,
                     request_deserializer=file__sync__pb2.FileRequest.FromString,
                     response_serializer=file__sync__pb2.File.SerializeToString,
             ),
-            'UploadFile': grpc.unary_unary_rpc_method_handler(
-                    servicer.UploadFile,
+            'upload_file': grpc.unary_unary_rpc_method_handler(
+                    servicer.upload_file,
                     request_deserializer=file__sync__pb2.File.FromString,
                     response_serializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.SerializeToString,
             ),
@@ -114,7 +114,7 @@ class FileSync(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def doesFileExists(request,
+    def does_file_exist(request,
             target,
             options=(),
             channel_credentials=None,
@@ -124,14 +124,14 @@ class FileSync(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/FileSync/doesFileExists',
+        return grpc.experimental.unary_unary(request, target, '/FileSync/does_file_exist',
             file__sync__pb2.File.SerializeToString,
             google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def SyncFile(request_iterator,
+    def sync_file(request_iterator,
             target,
             options=(),
             channel_credentials=None,
@@ -141,14 +141,14 @@ class FileSync(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.stream_stream(request_iterator, target, '/FileSync/SyncFile',
+        return grpc.experimental.stream_stream(request_iterator, target, '/FileSync/sync_file',
             file__sync__pb2.FilePart.SerializeToString,
             file__sync__pb2.FilePart.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def CheckVersion(request,
+    def check_version(request,
             target,
             options=(),
             channel_credentials=None,
@@ -158,14 +158,14 @@ class FileSync(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/FileSync/CheckVersion',
+        return grpc.experimental.unary_unary(request, target, '/FileSync/check_version',
             file__sync__pb2.FileRequest.SerializeToString,
             google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def GetFile(request,
+    def get_file(request,
             target,
             options=(),
             channel_credentials=None,
@@ -175,14 +175,14 @@ class FileSync(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/FileSync/GetFile',
+        return grpc.experimental.unary_unary(request, target, '/FileSync/get_file',
             file__sync__pb2.FileRequest.SerializeToString,
             file__sync__pb2.File.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def UploadFile(request,
+    def upload_file(request,
             target,
             options=(),
             channel_credentials=None,
@@ -192,7 +192,7 @@ class FileSync(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/FileSync/UploadFile',
+        return grpc.experimental.unary_unary(request, target, '/FileSync/upload_file',
             file__sync__pb2.File.SerializeToString,
             google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
             options, channel_credentials,

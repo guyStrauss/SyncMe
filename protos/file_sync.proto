@@ -1,13 +1,14 @@
 syntax = "proto3";
 import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
 
 service FileSync
 {
-  rpc doesFileExists (File) returns (google.protobuf.BoolValue) {}
-  rpc SyncFile (stream FilePart) returns (stream FilePart) {}
-  rpc CheckVersion (FileRequest) returns (google.protobuf.BoolValue) {}
-  rpc GetFile (FileRequest) returns (File) {}
-  rpc UploadFile (File) returns (google.protobuf.BoolValue) {}
+  rpc does_file_exist (File) returns (google.protobuf.BoolValue) {}
+  rpc sync_file (stream FilePart) returns (stream FilePart) {}
+  rpc check_version (FileRequest) returns (google.protobuf.BoolValue) {}
+  rpc get_file (FileRequest) returns (File) {}
+  rpc upload_file (File) returns (google.protobuf.BoolValue) {}
 }
 
 
@@ -19,8 +20,9 @@ message FileRequest
 
 message File
 {
-  string name = 2;
-  bytes data = 4;
+  string name = 1;
+  bytes data = 2;
+  google.protobuf.Timestamp last_modified = 3;
 }
 
 message FilePart

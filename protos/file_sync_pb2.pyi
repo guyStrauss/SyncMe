@@ -1,7 +1,8 @@
 from google.protobuf import wrappers_pb2 as _wrappers_pb2
+from google.protobuf import timestamp_pb2 as _timestamp_pb2
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
-from typing import ClassVar as _ClassVar, Optional as _Optional
+from typing import ClassVar as _ClassVar, Mapping as _Mapping, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
@@ -14,12 +15,14 @@ class FileRequest(_message.Message):
     def __init__(self, user_id: _Optional[str] = ..., hash: _Optional[str] = ...) -> None: ...
 
 class File(_message.Message):
-    __slots__ = ["name", "data"]
+    __slots__ = ["name", "data", "last_modified"]
     NAME_FIELD_NUMBER: _ClassVar[int]
     DATA_FIELD_NUMBER: _ClassVar[int]
+    LAST_MODIFIED_FIELD_NUMBER: _ClassVar[int]
     name: str
     data: bytes
-    def __init__(self, name: _Optional[str] = ..., data: _Optional[bytes] = ...) -> None: ...
+    last_modified: _timestamp_pb2.Timestamp
+    def __init__(self, name: _Optional[str] = ..., data: _Optional[bytes] = ..., last_modified: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
 
 class FilePart(_message.Message):
     __slots__ = ["data", "hash", "part"]

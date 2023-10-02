@@ -12,9 +12,10 @@ _sym_db = _symbol_database.Default()
 
 
 from google.protobuf import wrappers_pb2 as google_dot_protobuf_dot_wrappers__pb2
+from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0f\x66ile_sync.proto\x1a\x1egoogle/protobuf/wrappers.proto\",\n\x0b\x46ileRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x0c\n\x04hash\x18\x02 \x01(\t\"\"\n\x04\x46ile\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x0c\n\x04\x64\x61ta\x18\x04 \x01(\x0c\"4\n\x08\x46ilePart\x12\x0c\n\x04\x64\x61ta\x18\x01 \x01(\x0c\x12\x0c\n\x04hash\x18\x02 \x01(\t\x12\x0c\n\x04part\x18\x03 \x01(\x05\x32\xfa\x01\n\x08\x46ileSync\x12\x35\n\x0e\x64oesFileExists\x12\x05.File\x1a\x1a.google.protobuf.BoolValue\"\x00\x12&\n\x08SyncFile\x12\t.FilePart\x1a\t.FilePart\"\x00(\x01\x30\x01\x12:\n\x0c\x43heckVersion\x12\x0c.FileRequest\x1a\x1a.google.protobuf.BoolValue\"\x00\x12 \n\x07GetFile\x12\x0c.FileRequest\x1a\x05.File\"\x00\x12\x31\n\nUploadFile\x12\x05.File\x1a\x1a.google.protobuf.BoolValue\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0f\x66ile_sync.proto\x1a\x1egoogle/protobuf/wrappers.proto\x1a\x1fgoogle/protobuf/timestamp.proto\",\n\x0b\x46ileRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x0c\n\x04hash\x18\x02 \x01(\t\"U\n\x04\x46ile\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0c\n\x04\x64\x61ta\x18\x02 \x01(\x0c\x12\x31\n\rlast_modified\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"4\n\x08\x46ilePart\x12\x0c\n\x04\x64\x61ta\x18\x01 \x01(\x0c\x12\x0c\n\x04hash\x18\x02 \x01(\t\x12\x0c\n\x04part\x18\x03 \x01(\x05\x32\xff\x01\n\x08\x46ileSync\x12\x36\n\x0f\x64oes_file_exist\x12\x05.File\x1a\x1a.google.protobuf.BoolValue\"\x00\x12\'\n\tsync_file\x12\t.FilePart\x1a\t.FilePart\"\x00(\x01\x30\x01\x12;\n\rcheck_version\x12\x0c.FileRequest\x1a\x1a.google.protobuf.BoolValue\"\x00\x12!\n\x08get_file\x12\x0c.FileRequest\x1a\x05.File\"\x00\x12\x32\n\x0bupload_file\x12\x05.File\x1a\x1a.google.protobuf.BoolValue\"\x00\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -22,12 +23,12 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'file_sync_pb2', _globals)
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
-  _globals['_FILEREQUEST']._serialized_start=51
-  _globals['_FILEREQUEST']._serialized_end=95
-  _globals['_FILE']._serialized_start=97
-  _globals['_FILE']._serialized_end=131
-  _globals['_FILEPART']._serialized_start=133
-  _globals['_FILEPART']._serialized_end=185
-  _globals['_FILESYNC']._serialized_start=188
-  _globals['_FILESYNC']._serialized_end=438
+  _globals['_FILEREQUEST']._serialized_start=84
+  _globals['_FILEREQUEST']._serialized_end=128
+  _globals['_FILE']._serialized_start=130
+  _globals['_FILE']._serialized_end=215
+  _globals['_FILEPART']._serialized_start=217
+  _globals['_FILEPART']._serialized_end=269
+  _globals['_FILESYNC']._serialized_start=272
+  _globals['_FILESYNC']._serialized_end=527
 # @@protoc_insertion_point(module_scope)
