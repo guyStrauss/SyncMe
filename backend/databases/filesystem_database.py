@@ -84,6 +84,16 @@ class FilesystemDatabase(StorageDatabase):
                 file.write(change.data)
         return True
 
+    def calculate_hash(self, user_id: str, file_id: str) -> str:
+        """
+        Calculate the hash of the file.
+        :param user_id: id of the user.
+        :param file_id: The id of the file.
+        :return: The hash of the file.
+        :rtype: str
+        """
+        return hashlib.md5(self._read_file_from_disk(self._get_file_path(user_id, file_id))).hexdigest()
+
     def _get_file_path(self, user_id: str, file_id: str):
         """
         Get the path of the file.

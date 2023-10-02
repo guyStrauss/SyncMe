@@ -43,12 +43,9 @@ class MongoDatabase(MetadataDatabase):
         :return: The metadata of the file.
         :rtype: FileMetadata
         """
-        logger.info("Getting metadata from the database.")
+        logger.info("Getting metadata from the database ")
         result = self.collection.find_one({"hash": file_hash})
-        try:
-            return FileMetadata(**result)
-        except TypeError:
-            raise MetadataNotFoundError("Metadata not found in the database.")
+        return FileMetadata(**result) if result else None
 
     def update_metadata(self, metadata: FileMetadata) -> bool:
         """
