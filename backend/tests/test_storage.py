@@ -2,40 +2,21 @@ import hashlib
 import os
 import random
 import unittest
-import shutil
 import zipfile
 
-from backend.databases.filesystem_database import FilesystemDatabase, FILENAME
+from backend.databases.filesystem_database import FILENAME
 from backend.models.file_change import FileChange
+from backend.tests.base.storage_base_test import StorageBaseTest
+from backend.tests.constants import USER_ID, MEGA_BYTE
 
-DIRECTORY = "storage_test"
-MEGA_BYTE = 1024 * 1024
-USER_ID = "1"
+USER_ID = str(USER_ID)
 
 
-class TestStorage(unittest.TestCase):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.storage = FilesystemDatabase(DIRECTORY)
-
-    @classmethod
-    def tearDownClass(cls) -> None:
-        shutil.rmtree(DIRECTORY)
-
-    @staticmethod
-    def _generate_random_file(size: int = 5 * MEGA_BYTE) -> [bytes, str]:
-        data = os.urandom(size)
-        data_hash = hashlib.sha256(data).hexdigest()
-        return os.urandom(size), data_hash
-
-    def setUp(self) -> None:
-        for file in os.listdir(DIRECTORY):
-            shutil.rmtree(os.path.join(DIRECTORY, file))
-
+class TestStorage(StorageBaseTest):
     def test_upload(self):
         file_data, file_hash = self._generate_random_file()
         self.storage.upload_file(USER_ID, file_hash, file_data)
-        with zipfile.ZipFile(os.path.join(DIRECTORY, USER_ID, file_hash + ".zip"), 'r') as zip_file:
+        with zipfile.ZipFile(os.path.join(self.storage_location, USER_ID, file_hash + ".zip"), 'r') as zip_file:
             self.assertEqual(zip_file.read(FILENAME), file_data)
 
     def test_get_file(self):
@@ -50,11 +31,11 @@ class TestStorage(unittest.TestCase):
 
     def test_delete_file(self):
         file_data, file_hash = self._generate_random_file()
-        os.makedirs(os.path.join(DIRECTORY, USER_ID))
-        with open(os.path.join(DIRECTORY, USER_ID, file_hash + ".zip"), 'wb') as file:
+        os.makedirs(os.path.join(self.storage_location, USER_ID))
+        with open(os.path.join(self.storage_location, USER_ID, file_hash + ".zip"), 'wb') as file:
             file.write(file_data)
         self.assertTrue(self.storage.delete_file(USER_ID, file_hash))
-        self.assertFalse(os.path.exists(os.path.join(DIRECTORY, USER_ID, file_hash)))
+        self.assertFalse(os.path.exists(os.path.join(self.storage_location, USER_ID, file_hash)))
 
     def test_sync_file(self):
         file_data, file_hash = self._generate_random_file()
