@@ -35,7 +35,7 @@ class TestStorage(unittest.TestCase):
     def test_upload(self):
         file_data, file_hash = self._generate_random_file()
         self.storage.upload_file(USER_ID, file_hash, file_data)
-        with zipfile.ZipFile(os.path.join(DIRECTORY, USER_ID, file_hash), 'r') as zip_file:
+        with zipfile.ZipFile(os.path.join(DIRECTORY, USER_ID, file_hash + ".zip"), 'r') as zip_file:
             self.assertEqual(zip_file.read(FILENAME), file_data)
 
     def test_get_file(self):
@@ -51,7 +51,7 @@ class TestStorage(unittest.TestCase):
     def test_delete_file(self):
         file_data, file_hash = self._generate_random_file()
         os.makedirs(os.path.join(DIRECTORY, USER_ID))
-        with open(os.path.join(DIRECTORY, USER_ID, file_hash), 'wb') as file:
+        with open(os.path.join(DIRECTORY, USER_ID, file_hash + ".zip"), 'wb') as file:
             file.write(file_data)
         self.assertTrue(self.storage.delete_file(USER_ID, file_hash))
         self.assertFalse(os.path.exists(os.path.join(DIRECTORY, USER_ID, file_hash)))

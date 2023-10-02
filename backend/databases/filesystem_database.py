@@ -15,16 +15,6 @@ FILENAME = "file"
 FILE_EXTENSION = ".zip"
 
 
-def _write_file_to_disk(file_path: str, file: bytes):
-    """
-    Write the file to the disk.
-    :param file_path: The path of the file.
-    :param file: The file.
-    """
-    with zipfile.ZipFile(file_path, 'w') as zip_file:
-        zip_file.writestr(FILENAME, file)
-
-
 class FilesystemDatabase(StorageDatabase):
     def __init__(self, root_path: str):
         """
@@ -61,7 +51,7 @@ class FilesystemDatabase(StorageDatabase):
         file_path = self._get_file_path(user_id, file_id)
         if not os.path.exists(user_path):
             os.makedirs(user_path)
-        _write_file_to_disk(file_path, file)
+        self._write_file_to_disk(file_path, file)
         return True
 
     def delete_file(self, user_id: str, file_id: str) -> bool:
