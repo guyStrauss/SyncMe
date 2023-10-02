@@ -4,6 +4,7 @@ Specific implementation of the database interface for MongoDB.
 import logging
 from typing import List
 
+from bson import ObjectId
 from pymongo import MongoClient
 from backend.databases.base.metadata_database import MetadataDatabase
 from backend.databases.exceptions.mongo_exceptions import MetadataNotFoundError
@@ -16,13 +17,13 @@ logger = logging.getLogger(__name__)
 
 
 class MongoDatabase(MetadataDatabase):
-    def __init__(self, collection_name: str = "metadata"):
+    def __init__(self, collection_name):
         """
         Initialize the database.
         """
-        self.client = MongoClient(HOST, PORT)
-        self.db = self.client[collection_name]
-        self.collection = self.db[collection_name]
+        self.__client = MongoClient(HOST, PORT)
+        self.__db = self.__client[collection_name]
+        self.___collection = self.__db[collection_name]
         logger.info("Database initialized.")
 
     def insert_metadata(self, metadata: FileMetadata) -> str:
@@ -34,7 +35,7 @@ class MongoDatabase(MetadataDatabase):
         """
         logger.info("Inserting metadata into the database.")
         # Override the id with the hash of the file.
-        return self.collection.insert_one(metadata.model_dump()).inserted_id
+        return str(self.___collection.insert_one(metadata.model_dump()).inserted_id)
 
     def get_metadata(self, file_id: str) -> FileMetadata | None:
         """
@@ -44,7 +45,7 @@ class MongoDatabase(MetadataDatabase):
         :rtype: FileMetadata
         """
         logger.info("Getting metadata from the database ")
-        result = self.collection.find_one({"_id": file_id})
+        result = self.___collection.find_one({"_id": ObjectId(file_id)})
         return FileMetadata(**result) if result else None
 
     def update_metadata(self, file_id: str, metadata: FileMetadata) -> bool:
@@ -57,13 +58,13 @@ class MongoDatabase(MetadataDatabase):
         """
         logger.info("Updating metadata in the database.")
         try:
-            self.collection.update_one({"_id": file_id}, {"$set": metadata.model_dump()})
+            self.___collection.update_one({"_id": ObjectId(file_id)}, {"$set": metadata.model_dump()})
         except Exception as e:
             logger.error("Error while updating the metadata: {}".format(e))
             return False
         return True
 
-    def delete_metadata(self, file_hash: str) -> bool:
+    def delete_metadata(self, file_id: str) -> bool:
         """
         Delete the metadata of the file.
         :param file_id: The hash of the file.
@@ -71,7 +72,7 @@ class MongoDatabase(MetadataDatabase):
         :rtype: bool
         """
         logger.info("Deleting metadata from the database.")
-        return self.collection.delete_one({"hash": file_hash}).deleted_count > 0
+        return self.___collection.delete_one({"_id": ObjectId(file_id)}).deleted_count > 0
 
     def get_all_metadata(self, user_id: int) -> List[FileMetadata]:
         """
@@ -81,4 +82,4 @@ class MongoDatabase(MetadataDatabase):
         :rtype: list[FileMetadata]
         """
         logger.info("Getting all metadata from the database.")
-        return [FileMetadata(**metadata) for metadata in self.collection.find({"user_id": user_id})]
+        return [FileMetadata(**metadata) for metadata in self.___collection.find({"user_id": user_id})]

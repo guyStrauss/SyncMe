@@ -1,20 +1,23 @@
 import logging
 from concurrent import futures
+from datetime import datetime
+
 import grpc
 
-from backend.databases.exceptions.mongo_exceptions import MetadataNotFoundError
 from backend.models.file_medadata import FileMetadata
 from protos import file_sync_pb2_grpc, file_sync_pb2
 from backend.databases.filesystem_database import FilesystemDatabase
 from backend.databases.mongo_database import MongoDatabase
 
+STORAGE_DIRECTORY = "storage/"
+METADATA_COLLECTION = "metadata"
 
 class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, metadata: str = METADATA_COLLECTION, storage_directory: str = STORAGE_DIRECTORY, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._logger = logging.getLogger(__name__)
-        self.metadata_db = MongoDatabase()
-        self.storage_db = FilesystemDatabase("/storage")
+        self.metadata_db = MongoDatabase(metadata)
+        self.storage_db = FilesystemDatabase(storage_directory)
 
     def get_file(self, request: file_sync_pb2.FileRequest, context):
         """
@@ -48,10 +51,10 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         """
         self._logger.info("upload_file called with hash: %s", request.hash)
         metadata = FileMetadata(hash=request.hash, user_id=request.user_id, path=request.name,
-                                last_modified=request.last_modified)
-        self.metadata_db.insert_metadata(metadata)
+                                last_modified=datetime.fromtimestamp(request.last_modified.seconds))
+        inserted_id = self.metadata_db.insert_metadata(metadata)
         self.storage_db.upload_file(request.user_id, request.hash, request.data)
-        return self.storage_db.calculate_hash(request.user_id, request.hash) == request.hash
+        return inserted_id
 
 
 def serve():

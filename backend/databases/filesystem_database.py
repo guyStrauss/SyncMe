@@ -35,8 +35,8 @@ class FilesystemDatabase(StorageDatabase):
         :return: The file.
         :rtype: bytes
         """
-        file_path = self._get_file_path(user_id, file_id)
-        return self._read_file_from_disk(file_path, file_offset, block_size)
+        file_path = self.__get_file_path(user_id, file_id)
+        return self.__read_file_from_disk(file_path, file_offset, block_size)
 
     def upload_file(self, user_id: str, file_id: str, file: bytes) -> bool:
         """
@@ -47,11 +47,11 @@ class FilesystemDatabase(StorageDatabase):
         :return: True if the file was uploaded successfully, False otherwise.
         :rtype: bool
         """
-        user_path = os.path.join(self.root_path, user_id)
-        file_path = self._get_file_path(user_id, file_id)
+        user_path = os.path.join(self.root_path, str(user_id))
+        file_path = self.__get_file_path(user_id, file_id)
         if not os.path.exists(user_path):
             os.makedirs(user_path)
-        self._write_file_to_disk(file_path, file)
+        self.__write_file_to_disk(file_path, file)
         return True
 
     def delete_file(self, user_id: str, file_id: str) -> bool:
@@ -62,7 +62,7 @@ class FilesystemDatabase(StorageDatabase):
         :return: True if the file was deleted successfully, False otherwise.
         :rtype: bool
         """
-        file_path = self._get_file_path(user_id, file_id)
+        file_path = self.__get_file_path(user_id, file_id)
         try:
             os.remove(file_path)
             return True
@@ -78,7 +78,7 @@ class FilesystemDatabase(StorageDatabase):
         :return: True if the file was synced successfully, False otherwise.
         :rtype: bool
         """
-        with self._open_file(user_id, file_id) as file:
+        with self.__open_file(user_id, file_id) as file:
             for change in changes:
                 file.seek(change.offset)
                 file.write(change.data)
@@ -92,19 +92,19 @@ class FilesystemDatabase(StorageDatabase):
         :return: The hash of the file.
         :rtype: str
         """
-        return hashlib.md5(self._read_file_from_disk(self._get_file_path(user_id, file_id))).hexdigest()
+        return hashlib.sha256(self.__read_file_from_disk(self.__get_file_path(user_id, file_id))).hexdigest()
 
-    def _get_file_path(self, user_id: str, file_id: str):
+    def __get_file_path(self, user_id: str, file_id: str):
         """
         Get the path of the file.
         :param user_id:
         :param file_id:
         :return:
         """
-        return os.path.join(self.root_path, user_id, file_id + FILE_EXTENSION)
+        return os.path.join(self.root_path, str(user_id), file_id + FILE_EXTENSION)
 
     @staticmethod
-    def _read_file_from_disk(file_path: str, offset: int = None, block: int = None) -> bytes:
+    def __read_file_from_disk(file_path: str, offset: int = None, block: int = None) -> bytes:
         """
         Read the file from the disk.
         :param file_path: The path of the file.
@@ -120,7 +120,7 @@ class FilesystemDatabase(StorageDatabase):
             return zip_file.read(FILENAME)
 
     @staticmethod
-    def _write_file_to_disk(file_path: str, file: bytes):
+    def __write_file_to_disk(file_path: str, file: bytes):
         """
         Write the file to the disk.
         :param file_path: The path of the file.
@@ -131,7 +131,7 @@ class FilesystemDatabase(StorageDatabase):
             zip_file.writestr(FILENAME, file)
 
     @contextmanager
-    def _open_file(self, user_id: str, file_id: str):
+    def __open_file(self, user_id: str, file_id: str):
         """
         context manager for opening a file. after the context is closed, the file is zipped and renamed. according to
         the new hash.
@@ -140,7 +140,7 @@ class FilesystemDatabase(StorageDatabase):
         :return: An object like file.
         """
         logging.debug(f"Opening file: {file_id}")
-        file_path = self._get_file_path(user_id, file_id)
+        file_path = self.__get_file_path(user_id, file_id)
         bytes_io = BytesIO()
 
         with zipfile.ZipFile(file_path, "r") as read_zip_file:
@@ -150,4 +150,4 @@ class FilesystemDatabase(StorageDatabase):
 
         with zipfile.ZipFile(file_path, "w") as write_zip_file:
             write_zip_file.writestr(FILENAME, bytes_io.getvalue())
-        os.rename(self._get_file_path(user_id, file_id), self._get_file_path(user_id, new_hash))
+        os.rename(self.__get_file_path(user_id, file_id), self.__get_file_path(user_id, new_hash))
