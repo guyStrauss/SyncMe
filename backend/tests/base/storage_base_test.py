@@ -16,13 +16,16 @@ class StorageBaseTest(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
-        shutil.rmtree(cls.storage_location)
+        try:
+            shutil.rmtree(cls.storage_location)
+        except FileNotFoundError:
+            pass
 
     @staticmethod
     def _generate_random_file(size: int = 5 * MEGA_BYTE) -> [bytes, str]:
         data = os.urandom(size)
         data_hash = hashlib.sha256(data).hexdigest()
-        return os.urandom(size), data_hash
+        return data, data_hash
 
     def setUp(self) -> None:
         for file in os.listdir(self.storage_location):

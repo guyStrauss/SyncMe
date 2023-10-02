@@ -3,17 +3,20 @@ from concurrent import futures
 from datetime import datetime
 
 import grpc
+from google.protobuf.timestamp_pb2 import Timestamp
 
-from backend.models.file_medadata import FileMetadata
-from protos import file_sync_pb2_grpc, file_sync_pb2
 from backend.databases.filesystem_database import FilesystemDatabase
 from backend.databases.mongo_database import MongoDatabase
+from backend.models.file_medadata import FileMetadata
+from protos import file_sync_pb2_grpc, file_sync_pb2
 
 STORAGE_DIRECTORY = "storage/"
 METADATA_COLLECTION = "metadata"
 
+
 class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
-    def __init__(self, metadata: str = METADATA_COLLECTION, storage_directory: str = STORAGE_DIRECTORY, *args, **kwargs):
+    def __init__(self, metadata: str = METADATA_COLLECTION, storage_directory: str = STORAGE_DIRECTORY, *args,
+                 **kwargs):
         super().__init__(*args, **kwargs)
         self._logger = logging.getLogger(__name__)
         self.metadata_db = MongoDatabase(metadata)
@@ -28,7 +31,11 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         if request.user_id != metadata.user_id:
             context.abort(grpc.StatusCode.PERMISSION_DENIED, "User id does not match the file id.")
         file = self.storage_db.get_file(request.user_id, metadata.hash)
-        return file_sync_pb2.File(name=metadata.path, data=file)
+        timestamp = Timestamp()
+        timestamp.FromDatetime(metadata.last_modified)
+        return file_sync_pb2.File(name=metadata.path, data=file, hash=metadata.hash,
+                                  last_modified=timestamp,
+                                  user_id=metadata.user_id)
 
     def check_version(self, request: file_sync_pb2.CompareHash, context):
         """
@@ -50,8 +57,9 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         Upload the file to the storage.
         """
         self._logger.info("upload_file called with hash: %s", request.hash)
+        last_modified = datetime.utcfromtimestamp(request.last_modified.seconds)
         metadata = FileMetadata(hash=request.hash, user_id=request.user_id, path=request.name,
-                                last_modified=datetime.fromtimestamp(request.last_modified.seconds))
+                                last_modified=last_modified)
         inserted_id = self.metadata_db.insert_metadata(metadata)
         self.storage_db.upload_file(request.user_id, request.hash, request.data)
         return inserted_id
