@@ -3,7 +3,9 @@ import os
 import random
 import unittest
 import shutil
-from backend.databases.filesystem_database import FilesystemDatabase
+import zipfile
+
+from backend.databases.filesystem_database import FilesystemDatabase, FILENAME
 from backend.models.file_change import FileChange
 
 DIRECTORY = "storage_test"
@@ -27,8 +29,8 @@ class TestStorage(unittest.TestCase):
     def test_upload(self):
         file_data, file_hash = self._generate_random_file()
         self.storage.upload_file(USER_ID, file_hash, file_data)
-        with open(os.path.join(DIRECTORY, USER_ID, file_hash), 'rb') as file:
-            self.assertEqual(file.read(), file_data)
+        with zipfile.ZipFile(os.path.join(DIRECTORY, USER_ID, file_hash), 'r') as zip_file:
+            self.assertEqual(zip_file.read(FILENAME), file_data)
 
     def test_get_file(self):
         file_data, file_hash = self._generate_random_file()
@@ -62,7 +64,8 @@ class TestStorage(unittest.TestCase):
         new_file_hash = hashlib.sha256(file_data).hexdigest()
         self.assertEqual(self.storage.get_file(USER_ID, new_file_hash), file_data)
 
-    def _generate_random_file(self, size: int = 5 * MEGA_BYTE) -> [bytes, str]:
+    @staticmethod
+    def _generate_random_file(size: int = 5 * MEGA_BYTE) -> [bytes, str]:
         data = os.urandom(size)
         data_hash = hashlib.sha256(data).hexdigest()
         return os.urandom(size), data_hash
