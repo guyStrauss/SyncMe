@@ -18,13 +18,19 @@ class TestStorage(unittest.TestCase):
         super().__init__(*args, **kwargs)
         self.storage = FilesystemDatabase(DIRECTORY)
 
-    def setUp(self) -> None:
-        for file in os.listdir(DIRECTORY):
-            shutil.rmtree(os.path.join(DIRECTORY, file))
-
     @classmethod
     def tearDownClass(cls) -> None:
         shutil.rmtree(DIRECTORY)
+
+    @staticmethod
+    def _generate_random_file(size: int = 5 * MEGA_BYTE) -> [bytes, str]:
+        data = os.urandom(size)
+        data_hash = hashlib.sha256(data).hexdigest()
+        return os.urandom(size), data_hash
+
+    def setUp(self) -> None:
+        for file in os.listdir(DIRECTORY):
+            shutil.rmtree(os.path.join(DIRECTORY, file))
 
     def test_upload(self):
         file_data, file_hash = self._generate_random_file()
@@ -63,12 +69,6 @@ class TestStorage(unittest.TestCase):
         self.storage.sync_file(USER_ID, file_hash, file_changes)
         new_file_hash = hashlib.sha256(file_data).hexdigest()
         self.assertEqual(self.storage.get_file(USER_ID, new_file_hash), file_data)
-
-    @staticmethod
-    def _generate_random_file(size: int = 5 * MEGA_BYTE) -> [bytes, str]:
-        data = os.urandom(size)
-        data_hash = hashlib.sha256(data).hexdigest()
-        return os.urandom(size), data_hash
 
 
 if __name__ == '__main__':

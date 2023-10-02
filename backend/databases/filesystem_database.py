@@ -141,6 +141,7 @@ class FilesystemDatabase(StorageDatabase):
         logging.debug(f"Opening file: {file_id}")
         file_path = self._get_file_path(user_id, file_id)
         bytes_io = BytesIO()
+
         with zipfile.ZipFile(file_path, "r") as read_zip_file:
             bytes_io.write(read_zip_file.read(FILENAME))
             yield bytes_io
