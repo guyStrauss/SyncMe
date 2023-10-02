@@ -1,6 +1,7 @@
 """
 Implements the storage database interface, using the filesystem as the storage.
 """
+import hashlib
 import os
 from typing import List
 
@@ -81,6 +82,9 @@ class FilesystemDatabase(StorageDatabase):
             for change in changes:
                 file.seek(change.offset)
                 file.write(change.data)
+        with open(file_path, 'rb') as file:
+            file_hash = hashlib.sha256(file.read()).hexdigest()
+        os.rename(self._get_file_path(user_id, file_id), self._get_file_path(user_id, file_hash))
         return True
 
     def _get_file_path(self, user_id: str, file_id: str):
