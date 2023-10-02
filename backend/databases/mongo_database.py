@@ -6,12 +6,12 @@ from typing import List
 
 from bson import ObjectId
 from pymongo import MongoClient
+
 from backend.databases.base.metadata_database import MetadataDatabase
-from backend.databases.exceptions.mongo_exceptions import MetadataNotFoundError
 from backend.models.file_medadata import FileMetadata
 
 PORT = 27017
-HOST = 'localhost'
+HOST = "localhost"
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +58,9 @@ class MongoDatabase(MetadataDatabase):
         """
         logger.info("Updating metadata in the database.")
         try:
-            self.___collection.update_one({"_id": ObjectId(file_id)}, {"$set": metadata.model_dump()})
+            self.___collection.update_one(
+                {"_id": ObjectId(file_id)}, {"$set": metadata.model_dump()}
+            )
         except Exception as e:
             logger.error("Error while updating the metadata: {}".format(e))
             return False
@@ -72,7 +74,9 @@ class MongoDatabase(MetadataDatabase):
         :rtype: bool
         """
         logger.info("Deleting metadata from the database.")
-        return self.___collection.delete_one({"_id": ObjectId(file_id)}).deleted_count > 0
+        return (
+                self.___collection.delete_one({"_id": ObjectId(file_id)}).deleted_count > 0
+        )
 
     def get_all_metadata(self, user_id: int) -> List[FileMetadata]:
         """
@@ -82,4 +86,7 @@ class MongoDatabase(MetadataDatabase):
         :rtype: list[FileMetadata]
         """
         logger.info("Getting all metadata from the database.")
-        return [FileMetadata(**metadata) for metadata in self.___collection.find({"user_id": user_id})]
+        return [
+            FileMetadata(**metadata)
+            for metadata in self.___collection.find({"user_id": user_id})
+        ]

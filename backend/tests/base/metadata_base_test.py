@@ -1,5 +1,5 @@
 import unittest
-from datetime import datetime
+
 import pymongo
 
 from backend.databases.mongo_database import MongoDatabase, PORT, HOST

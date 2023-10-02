@@ -101,7 +101,7 @@ class FilesystemDatabase(StorageDatabase):
         :param file_id:
         :return:
         """
-        return os.path.join(self.root_path, str(user_id), file_id + FILE_EXTENSION)
+        return os.path.join(self.root_path, user_id, file_id + FILE_EXTENSION)
 
     @staticmethod
     def __read_file_from_disk(file_path: str, offset: int = None, block: int = None) -> bytes:

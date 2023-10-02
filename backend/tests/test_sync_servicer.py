@@ -1,7 +1,6 @@
 import hashlib
 import unittest
 from datetime import datetime
-from os import urandom
 
 from google.protobuf.timestamp_pb2 import Timestamp
 

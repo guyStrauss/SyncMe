@@ -9,8 +9,6 @@ from backend.models.file_change import FileChange
 from backend.tests.base.storage_base_test import StorageBaseTest
 from backend.tests.constants import USER_ID, MEGA_BYTE
 
-USER_ID = str(USER_ID)
-
 
 class TestStorage(StorageBaseTest):
     def test_upload(self):

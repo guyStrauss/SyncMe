@@ -1,7 +1,6 @@
 """
 This class will be responsible for the database metadata store and the interface for
 """
-from bson import ObjectId
 
 from backend.models.file_medadata import FileMetadata
 

@@ -4,25 +4,37 @@ import "google/protobuf/timestamp.proto";
 
 service FileSync
 {
-  rpc does_file_exist (File) returns (google.protobuf.BoolValue) {}
-  rpc sync_file (stream FilePart) returns (stream FilePart) {}
-  rpc check_version (FileRequest) returns (google.protobuf.BoolValue) {}
+  rpc does_file_exist (FileRequest) returns (google.protobuf.BoolValue) {}
+  rpc sync_file (stream FilePart) returns (google.protobuf.StringValue) {}
+  rpc check_version (CompareHash) returns (google.protobuf.BoolValue) {}
   rpc get_file (FileRequest) returns (File) {}
-  rpc upload_file (File) returns (google.protobuf.BoolValue) {}
+  rpc upload_file (File) returns (google.protobuf.StringValue) {}
+  rpc delete_file (google.protobuf.StringValue) returns (google.protobuf.BoolValue) {}
+  rpc get_file_hashes (google.protobuf.StringValue) returns (stream Block) {}
+  rpc get_file_list (google.protobuf.StringValue) returns (stream FileRequest) {}
 }
 
 
 message FileRequest
 {
   string user_id = 1;
+  string file_id = 2;
+}
+
+message CompareHash
+{
+  string file_id = 1;
   string hash = 2;
 }
 
+
 message File
 {
-  string name = 1;
-  bytes data = 2;
-  google.protobuf.Timestamp last_modified = 3;
+  string user_id = 1;
+  string hash = 2;
+  string name = 3;
+  bytes data = 4;
+  google.protobuf.Timestamp last_modified = 5;
 }
 
 message FilePart
@@ -31,3 +43,11 @@ message FilePart
   string hash = 2;
   int32 part = 3;
 }
+
+message Block
+{
+  string hash = 1;
+  string size = 2;
+  int32 part = 3;
+}
+

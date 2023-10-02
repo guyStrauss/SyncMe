@@ -17,17 +17,17 @@ class FileSyncStub(object):
         """
         self.does_file_exist = channel.unary_unary(
                 '/FileSync/does_file_exist',
-                request_serializer=file__sync__pb2.File.SerializeToString,
+                request_serializer=file__sync__pb2.FileRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
                 )
-        self.sync_file = channel.stream_stream(
+        self.sync_file = channel.stream_unary(
                 '/FileSync/sync_file',
                 request_serializer=file__sync__pb2.FilePart.SerializeToString,
-                response_deserializer=file__sync__pb2.FilePart.FromString,
+                response_deserializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
                 )
         self.check_version = channel.unary_unary(
                 '/FileSync/check_version',
-                request_serializer=file__sync__pb2.FileRequest.SerializeToString,
+                request_serializer=file__sync__pb2.CompareHash.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
                 )
         self.get_file = channel.unary_unary(
@@ -38,7 +38,22 @@ class FileSyncStub(object):
         self.upload_file = channel.unary_unary(
                 '/FileSync/upload_file',
                 request_serializer=file__sync__pb2.File.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
+                )
+        self.delete_file = channel.unary_unary(
+                '/FileSync/delete_file',
+                request_serializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
+                )
+        self.get_file_hashes = channel.unary_stream(
+                '/FileSync/get_file_hashes',
+                request_serializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
+                response_deserializer=file__sync__pb2.Block.FromString,
+                )
+        self.get_file_list = channel.unary_stream(
+                '/FileSync/get_file_list',
+                request_serializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
+                response_deserializer=file__sync__pb2.FileRequest.FromString,
                 )
 
 
@@ -75,22 +90,40 @@ class FileSyncServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def delete_file(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def get_file_hashes(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def get_file_list(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_FileSyncServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'does_file_exist': grpc.unary_unary_rpc_method_handler(
                     servicer.does_file_exist,
-                    request_deserializer=file__sync__pb2.File.FromString,
+                    request_deserializer=file__sync__pb2.FileRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.SerializeToString,
             ),
-            'sync_file': grpc.stream_stream_rpc_method_handler(
+            'sync_file': grpc.stream_unary_rpc_method_handler(
                     servicer.sync_file,
                     request_deserializer=file__sync__pb2.FilePart.FromString,
-                    response_serializer=file__sync__pb2.FilePart.SerializeToString,
+                    response_serializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
             ),
             'check_version': grpc.unary_unary_rpc_method_handler(
                     servicer.check_version,
-                    request_deserializer=file__sync__pb2.FileRequest.FromString,
+                    request_deserializer=file__sync__pb2.CompareHash.FromString,
                     response_serializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.SerializeToString,
             ),
             'get_file': grpc.unary_unary_rpc_method_handler(
@@ -101,7 +134,22 @@ def add_FileSyncServicer_to_server(servicer, server):
             'upload_file': grpc.unary_unary_rpc_method_handler(
                     servicer.upload_file,
                     request_deserializer=file__sync__pb2.File.FromString,
+                    response_serializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
+            ),
+            'delete_file': grpc.unary_unary_rpc_method_handler(
+                    servicer.delete_file,
+                    request_deserializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
                     response_serializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.SerializeToString,
+            ),
+            'get_file_hashes': grpc.unary_stream_rpc_method_handler(
+                    servicer.get_file_hashes,
+                    request_deserializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
+                    response_serializer=file__sync__pb2.Block.SerializeToString,
+            ),
+            'get_file_list': grpc.unary_stream_rpc_method_handler(
+                    servicer.get_file_list,
+                    request_deserializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
+                    response_serializer=file__sync__pb2.FileRequest.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -125,7 +173,7 @@ class FileSync(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/FileSync/does_file_exist',
-            file__sync__pb2.File.SerializeToString,
+            file__sync__pb2.FileRequest.SerializeToString,
             google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
@@ -141,9 +189,9 @@ class FileSync(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.stream_stream(request_iterator, target, '/FileSync/sync_file',
+        return grpc.experimental.stream_unary(request_iterator, target, '/FileSync/sync_file',
             file__sync__pb2.FilePart.SerializeToString,
-            file__sync__pb2.FilePart.FromString,
+            google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -159,7 +207,7 @@ class FileSync(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/FileSync/check_version',
-            file__sync__pb2.FileRequest.SerializeToString,
+            file__sync__pb2.CompareHash.SerializeToString,
             google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
@@ -194,6 +242,57 @@ class FileSync(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/FileSync/upload_file',
             file__sync__pb2.File.SerializeToString,
+            google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def delete_file(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/FileSync/delete_file',
+            google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
             google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def get_file_hashes(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(request, target, '/FileSync/get_file_hashes',
+            google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
+            file__sync__pb2.Block.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def get_file_list(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(request, target, '/FileSync/get_file_list',
+            google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
+            file__sync__pb2.FileRequest.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

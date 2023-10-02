@@ -7,7 +7,9 @@ from backend.models.file_change import FileChange
 
 
 class StorageDatabase(object):
-    def get_file(self, user_id: str, file_id: str, file_offset: int, block_size: int) -> bytes:
+    def get_file(
+            self, user_id: str, file_id: str, file_offset: int, block_size: int
+    ) -> bytes:
         """
         Get the file from the storage.
         :param user_id: id of the user.
