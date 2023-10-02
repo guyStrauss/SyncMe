@@ -8,6 +8,7 @@ from bson import ObjectId
 from pymongo import MongoClient
 
 from backend.databases.base.metadata_database import MetadataDatabase
+from backend.models.exported_file_metadata import ExportedFileMetadata
 from backend.models.file_medadata import FileMetadata
 
 PORT = 27017
@@ -23,7 +24,7 @@ class MongoDatabase(MetadataDatabase):
         """
         self.__client = MongoClient(HOST, PORT)
         self.__db = self.__client[collection_name]
-        self.___collection = self.__db[collection_name]
+        self.__collection = self.__db[collection_name]
         logger.info("Database initialized.")
 
     def insert_metadata(self, metadata: FileMetadata) -> str:
@@ -35,7 +36,7 @@ class MongoDatabase(MetadataDatabase):
         """
         logger.info("Inserting metadata into the database.")
         # Override the id with the hash of the file.
-        return str(self.___collection.insert_one(metadata.model_dump()).inserted_id)
+        return str(self.__collection.insert_one(metadata.model_dump()).inserted_id)
 
     def get_metadata(self, file_id: str) -> FileMetadata | None:
         """
@@ -45,7 +46,7 @@ class MongoDatabase(MetadataDatabase):
         :rtype: FileMetadata
         """
         logger.info("Getting metadata from the database ")
-        result = self.___collection.find_one({"_id": ObjectId(file_id)})
+        result = self.__collection.find_one({"_id": ObjectId(file_id)})
         return FileMetadata(**result) if result else None
 
     def update_metadata(self, file_id: str, metadata: FileMetadata) -> bool:
@@ -58,7 +59,7 @@ class MongoDatabase(MetadataDatabase):
         """
         logger.info("Updating metadata in the database.")
         try:
-            self.___collection.update_one(
+            self.__collection.update_one(
                 {"_id": ObjectId(file_id)}, {"$set": metadata.model_dump()}
             )
         except Exception as e:
@@ -75,10 +76,10 @@ class MongoDatabase(MetadataDatabase):
         """
         logger.info("Deleting metadata from the database.")
         return (
-                self.___collection.delete_one({"_id": ObjectId(file_id)}).deleted_count > 0
+                self.__collection.delete_one({"_id": ObjectId(file_id)}).deleted_count > 0
         )
 
-    def get_all_metadata(self, user_id: int) -> List[FileMetadata]:
+    def get_all_metadata(self, user_id: int) -> List[ExportedFileMetadata]:
         """
         Get all the metadata of the files.
         :param user_id: The id of the user.
@@ -87,6 +88,6 @@ class MongoDatabase(MetadataDatabase):
         """
         logger.info("Getting all metadata from the database.")
         return [
-            FileMetadata(**metadata)
-            for metadata in self.___collection.find({"user_id": user_id})
+            ExportedFileMetadata(id=str(metadata["_id"]), **metadata)
+            for metadata in self.__collection.find({"user_id": user_id})
         ]

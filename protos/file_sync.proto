@@ -11,10 +11,13 @@ service FileSync
   rpc upload_file (File) returns (google.protobuf.StringValue) {}
   rpc delete_file (google.protobuf.StringValue) returns (google.protobuf.BoolValue) {}
   rpc get_file_hashes (google.protobuf.StringValue) returns (stream Block) {}
-  rpc get_file_list (google.protobuf.StringValue) returns (stream FileRequest) {}
+  rpc get_file_list (google.protobuf.StringValue) returns (FileList) {}
 }
 
-
+message FileList
+{
+  repeated FileRequest files = 1;
+}
 message FileRequest
 {
   string user_id = 1;

@@ -64,6 +64,16 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         self.storage_db.upload_file(request.user_id, request.hash, request.data)
         return inserted_id
 
+    def get_file_list(self, request, context):
+        """
+        Get the list of files for the user.
+        """
+        self._logger.info("get_file_list called")
+        metadata = self.metadata_db.get_all_metadata(request.user_id)
+        return file_sync_pb2.FileList(
+            files=[file_sync_pb2.FileRequest(user_id=metadata.user_id, file_id=metadata.id)
+                   for metadata in metadata])
+
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))

@@ -1,10 +1,17 @@
 from google.protobuf import wrappers_pb2 as _wrappers_pb2
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
+from google.protobuf.internal import containers as _containers
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
-from typing import ClassVar as _ClassVar, Mapping as _Mapping, Optional as _Optional, Union as _Union
+from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Mapping, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
+
+class FileList(_message.Message):
+    __slots__ = ["files"]
+    FILES_FIELD_NUMBER: _ClassVar[int]
+    files: _containers.RepeatedCompositeFieldContainer[FileRequest]
+    def __init__(self, files: _Optional[_Iterable[_Union[FileRequest, _Mapping]]] = ...) -> None: ...
 
 class FileRequest(_message.Message):
     __slots__ = ["user_id", "file_id"]
