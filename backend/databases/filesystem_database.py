@@ -12,6 +12,7 @@ from backend.databases.base.storage_database import StorageDatabase
 from backend.models.file_change import FileChange
 
 FILENAME = "file"
+FILE_EXTENSION = ".zip"
 
 
 def _write_file_to_disk(file_path: str, file: bytes):
@@ -100,7 +101,7 @@ class FilesystemDatabase(StorageDatabase):
         :param file_id:
         :return:
         """
-        return os.path.join(self.root_path, user_id, file_id)
+        return os.path.join(self.root_path, user_id, file_id + FILE_EXTENSION)
 
     @staticmethod
     def _read_file_from_disk(file_path: str, offset: int = None, block: int = None) -> bytes:
