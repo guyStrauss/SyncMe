@@ -21,11 +21,10 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         Get the file from the storage. mostly used for downloading files. after first initial setup.
         """
         self._logger.info("get_file called")
-        metadata = self.metadata_db.get_metadata(request.hash)
+        metadata = self.metadata_db.get_metadata(request.file_id)
         if request.user_id != metadata.user_id:
             context.abort(grpc.StatusCode.PERMISSION_DENIED, "User id does not match the file id.")
-        file = self.storage_db.get_file(request.user_id, request.hash)
-
+        file = self.storage_db.get_file(request.user_id, metadata.hash)
         return file_sync_pb2.File(name=metadata.path, data=file)
 
     def check_version(self, request: file_sync_pb2.CompareHash, context):
@@ -40,8 +39,7 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         """
         Check if the file exists.
         """
-        self._logger.info("does_file_exist called with hash: %s", request.hash)
-        metadata = self.metadata_db.get_metadata(request.hash)
+        metadata = self.metadata_db.get_metadata(request.file_id)
         return metadata is not None
 
     def upload_file(self, request, context):
