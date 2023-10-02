@@ -51,7 +51,7 @@ class MongoTests(unittest.TestCase):
         metadata = FileMetadata(path=FILE_NAME, hash=FILE_HASH, user_id=UESR_ID, last_modified=datetime.now())
         server.insert_metadata(metadata)
         server.delete_metadata(FILE_HASH)
-        self.assertRaises(MetadataNotFoundError, server.get_metadata, FILE_HASH)
+        self.assertIsNone(server.get_metadata(FILE_HASH))
 
 
 if __name__ == '__main__':
