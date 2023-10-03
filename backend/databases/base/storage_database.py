@@ -52,3 +52,19 @@ class StorageDatabase(object):
         :rtype: bool
         """
         raise NotImplementedError("This method is not implemented yet.")
+
+    def get_file_hashes(self, user_id: str, file_id: str, block_size: int) -> List[str]:
+        """
+        Get the list of hashes for the user. Used for syncing. and user determines block size
+        """
+        raise NotImplementedError("This method is not implemented yet.")
+
+    def calculate_hash(self, user_id: str, file_id: str) -> str:
+        """
+        Calculate the hash of the file.
+        :param user_id: id of the user.
+        :param file_id: The id of the file.
+        :return: The hash of the file.
+        :rtype: str
+        """
+        raise NotImplementedError("This method is not implemented yet.")

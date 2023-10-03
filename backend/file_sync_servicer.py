@@ -61,7 +61,8 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         metadata = FileMetadata(hash=request.hash, user_id=request.user_id, path=request.name,
                                 last_modified=last_modified)
         inserted_id = self.metadata_db.insert_metadata(metadata)
-        self.storage_db.upload_file(request.user_id, request.hash, request.data)
+        file_hashes = self.storage_db.upload_file(request.user_id, request.hash, request.data)
+        self.metadata_db.update_file_hashes(inserted_id, file_hashes)
         return inserted_id
 
     def get_file_list(self, request, context):
@@ -91,6 +92,18 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
             self._logger.error("Error while deleting the file: {}".format(e))
             return False
         return True
+
+    def get_file_hashes(self, request, context):
+        """
+        Get the list of hashes for the user. Used for syncing. and user determines block size
+        """
+        self._logger.info("get_file_hashes called")
+        metadata = self.metadata_db.get_metadata(request.file_id)
+        if request.user_id != metadata.user_id:
+            context.abort(grpc.StatusCode.PERMISSION_DENIED, "User id does not match the file id.")
+        file_hashes = self.storage_db.get_file_hashes(request.user_id, metadata.hash, request.block_size)
+        for part_file_hash in file_hashes:
+            yield file_sync_pb2.Block(hash=part_file_hash.hash, offset=part_file_hash.offset, size=part_file_hash.size)
 
 
 def serve():

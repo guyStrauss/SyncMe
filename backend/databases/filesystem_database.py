@@ -7,12 +7,15 @@ import os
 import zipfile
 from io import BytesIO
 from typing import List
-from contextlib import contextmanager
+
 from backend.databases.base.storage_database import StorageDatabase
 from backend.models.file_change import FileChange
+from backend.models.file_part_hash import FilePartHash
 
 FILENAME = "file"
 FILE_EXTENSION = ".zip"
+MEGA_BYTE = 1024 * 1024
+BLOCK_SIZE = MEGA_BYTE // 4
 
 
 class FilesystemDatabase(StorageDatabase):
@@ -38,7 +41,7 @@ class FilesystemDatabase(StorageDatabase):
         file_path = self.__get_file_path(user_id, file_id)
         return self.__read_file_from_disk(file_path, file_offset, block_size)
 
-    def upload_file(self, user_id: str, file_id: str, file: bytes) -> bool:
+    def upload_file(self, user_id: str, file_id: str, file: bytes) -> List[FilePartHash]:
         """
         Upload the file to the storage.
         :param user_id: id of the user.
@@ -51,8 +54,7 @@ class FilesystemDatabase(StorageDatabase):
         file_path = self.__get_file_path(user_id, file_id)
         if not os.path.exists(user_path):
             os.makedirs(user_path)
-        self.__write_file_to_disk(file_path, file)
-        return True
+        return self.__write_file_to_disk(file_path, file)
 
     def delete_file(self, user_id: str, file_id: str) -> bool:
         """
@@ -69,7 +71,7 @@ class FilesystemDatabase(StorageDatabase):
         except FileNotFoundError:
             return False
 
-    def sync_file(self, user_id: str, file_id: str, changes: List[FileChange]) -> bool:
+    def sync_file(self, user_id: str, file_id: str, changes: List[FileChange]) -> List[FilePartHash]:
         """
         Sync the file to the storage.
         :param user_id: id of the user.
@@ -78,11 +80,7 @@ class FilesystemDatabase(StorageDatabase):
         :return: True if the file was synced successfully, False otherwise.
         :rtype: bool
         """
-        with self.__open_file(user_id, file_id) as file:
-            for change in changes:
-                file.seek(change.offset)
-                file.write(change.data)
-        return True
+        return self.__write_changes(user_id, file_id, changes)
 
     def calculate_hash(self, user_id: str, file_id: str) -> str:
         """
@@ -120,18 +118,22 @@ class FilesystemDatabase(StorageDatabase):
             return zip_file.read(FILENAME)
 
     @staticmethod
-    def __write_file_to_disk(file_path: str, file: bytes):
+    def __write_file_to_disk(file_path: str, file: bytes) -> List[FilePartHash]:
         """
-        Write the file to the disk.
+        Write the file to the disk, and calculate the hash of the file.
         :param file_path: The path of the file.
         :param file: The file.
         """
         logging.debug(f"Writing file to disk: {file_path}")
+        parts_hashes = []
+        for i in range(0, len(file), BLOCK_SIZE):
+            part_data = file[i:i + BLOCK_SIZE]
+            parts_hashes.append(FilePartHash(hash=hashlib.sha256(part_data).hexdigest(), offset=i, size=len(part_data)))
         with zipfile.ZipFile(file_path, 'w') as zip_file:
             zip_file.writestr(FILENAME, file)
+        return parts_hashes
 
-    @contextmanager
-    def __open_file(self, user_id: str, file_id: str):
+    def __write_changes(self, user_id: str, file_id: str, changes: List[FileChange]):
         """
         context manager for opening a file. after the context is closed, the file is zipped and renamed. according to
         the new hash.
@@ -145,9 +147,11 @@ class FilesystemDatabase(StorageDatabase):
 
         with zipfile.ZipFile(file_path, "r") as read_zip_file:
             bytes_io.write(read_zip_file.read(FILENAME))
-            yield bytes_io
+            for change in changes:
+                bytes_io.seek(change.offset)
+                bytes_io.write(change.data)
             new_hash = hashlib.sha256(bytes_io.getvalue()).hexdigest()
 
-        with zipfile.ZipFile(file_path, "w") as write_zip_file:
-            write_zip_file.writestr(FILENAME, bytes_io.getvalue())
+        file_hashes = self.__write_file_to_disk(file_path, bytes_io.getvalue())
         os.rename(self.__get_file_path(user_id, file_id), self.__get_file_path(user_id, new_hash))
+        return file_hashes

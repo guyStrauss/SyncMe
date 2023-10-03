@@ -9,6 +9,7 @@ from pymongo import MongoClient
 
 from backend.databases.base.metadata_database import MetadataDatabase
 from backend.models.file_medadata import FileMetadata
+from backend.models.file_part_hash import FilePartHash
 from backend.models.inserted_file_metadata import InsertedFileMetadata
 
 PORT = 27017
@@ -61,6 +62,24 @@ class MongoDatabase(MetadataDatabase):
         try:
             self.__collection.update_one(
                 {"_id": ObjectId(file_id)}, {"$set": metadata.model_dump()}
+            )
+        except Exception as e:
+            logger.error("Error while updating the metadata: {}".format(e))
+            return False
+        return True
+
+    def update_file_hashes(self, file_id: str, hashes_list: list[FilePartHash]) -> bool:
+        """
+        Update the metadata of the file.
+        :param file_id: The id of the file.
+        :param hashes_list: The list of hashes of the file.
+        :return: The id of the file.
+        :rtype: bool
+        """
+        logger.info("Updating metadata in the database.")
+        try:
+            self.__collection.update_one(
+                {"_id": ObjectId(file_id)}, {"$set": {"hash_list": [part.model_dump() for part in hashes_list]}}
             )
         except Exception as e:
             logger.error("Error while updating the metadata: {}".format(e))

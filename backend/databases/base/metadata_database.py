@@ -3,6 +3,7 @@ This class will be responsible for the database metadata store and the interface
 """
 
 from backend.models.file_medadata import FileMetadata
+from backend.models.file_part_hash import FilePartHash
 
 
 class MetadataDatabase(object):
@@ -49,5 +50,15 @@ class MetadataDatabase(object):
         :param user_id: The id of the user.
         :return: The metadata of the files.
         :rtype: list[FileMetadata]
+        """
+        raise NotImplementedError("This method is not implemented yet.")
+
+    def update_file_hashes(self, file_id: str, hashes_list: list[FilePartHash]) -> bool:
+        """
+        Update the metadata of the file.
+        :param file_id: The id of the file.
+        :param hashes_list: The list of hashes of the file.
+        :return: The id of the file.
+        :rtype: bool
         """
         raise NotImplementedError("This method is not implemented yet.")

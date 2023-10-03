@@ -4,7 +4,7 @@ import random
 import unittest
 import zipfile
 
-from backend.databases.filesystem_database import FILENAME
+from backend.databases.filesystem_database import FILENAME, BLOCK_SIZE
 from backend.models.file_change import FileChange
 from backend.tests.base.storage_base_test import StorageBaseTest
 from backend.tests.constants import USER_ID, MEGA_BYTE
@@ -26,6 +26,14 @@ class TestStorage(StorageBaseTest):
         file_data, file_hash = self._generate_random_file()
         self.storage.upload_file(USER_ID, file_hash, file_data)
         self.assertEqual(self.storage.get_file(USER_ID, file_hash, 100, 100), file_data[100:200])
+
+    def test_get_file_hashes(self):
+        file_data, file_hash = self._generate_random_file()
+        server_hashes = [block.hash for block in self.storage.upload_file(USER_ID, file_hash, file_data)]
+        hashes = []
+        for i in range(0, len(file_data), BLOCK_SIZE):
+            hashes.append(hashlib.sha256(file_data[i:i + BLOCK_SIZE]).hexdigest())
+        self.assertEqual(server_hashes, hashes)
 
     def test_delete_file(self):
         file_data, file_hash = self._generate_random_file()

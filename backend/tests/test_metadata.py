@@ -2,6 +2,7 @@ import unittest
 from datetime import datetime
 
 from backend.models.file_medadata import FileMetadata
+from backend.models.file_part_hash import FilePartHash
 from backend.tests.base.metadata_base_test import MetadataBaseTest
 from backend.tests.constants import FILE_HASH, FILE_NAME, USER_ID
 
@@ -32,6 +33,14 @@ class MongoTests(MetadataBaseTest):
             self.server.insert_metadata(record)
         metadata = self.server.get_all_metadata(USER_ID)
         self.assertEqual(len(metadata), 10)
+
+    def test_update_hashes(self):
+        metadata = FileMetadata(path=FILE_NAME, hash=FILE_HASH, user_id=USER_ID, last_modified=datetime.now())
+        inserted_id = self.server.insert_metadata(metadata)
+        hashes = [FilePartHash(hash="1234", offset=0, size=100), FilePartHash(hash="5678", offset=100, size=100)]
+        response = self.server.update_file_hashes(inserted_id, hashes)
+        self.assertTrue(response)
+        self.assertEqual(self.server.get_metadata(inserted_id).hash_list, hashes)
 
     def test_get_metadata(self):
         metadata = FileMetadata(path=FILE_NAME, hash=FILE_HASH, user_id=USER_ID, last_modified=datetime.now())
