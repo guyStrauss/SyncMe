@@ -150,7 +150,6 @@ class FilesystemDatabase(StorageDatabase):
             for change in changes:
                 bytes_io.seek(change.offset)
                 bytes_io.write(change.data)
-            new_hash = hashlib.sha256(bytes_io.getvalue()).hexdigest()
 
         file_hashes = self.__write_file_to_disk(file_path, bytes_io.getvalue())
         return file_hashes

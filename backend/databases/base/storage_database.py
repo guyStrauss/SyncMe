@@ -4,7 +4,6 @@ This Object will describe the interface for the storage database.
 from typing import List
 
 from backend.models.file_change import FileChange
-from backend.models.file_part_hash import FilePartHash
 
 
 class StorageDatabase(object):
@@ -51,12 +50,6 @@ class StorageDatabase(object):
         :param changes: The changes of the file.
         :return: True if the file was synced successfully, False otherwise.
         :rtype: bool
-        """
-        raise NotImplementedError("This method is not implemented yet.")
-
-    def get_file_hashes(self, user_id: str, file_id: str, block_size: int) -> List[FilePartHash]:
-        """
-        Get the list of hashes for the user. Used for syncing. and user determines block size
         """
         raise NotImplementedError("This method is not implemented yet.")
 

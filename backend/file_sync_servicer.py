@@ -102,7 +102,7 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         metadata = self.metadata_db.get_metadata(request.file_id)
         if request.user_id != metadata.user_id:
             context.abort(grpc.StatusCode.PERMISSION_DENIED, "User id does not match the file id.")
-        file_hashes = self.storage_db.get_file_hashes(request.user_id, metadata.hash, request.block_size)
+        file_hashes = self.metadata_db.get_metadata(metadata.id).hash_list
         for part_file_hash in file_hashes:
             yield file_sync_pb2.Block(hash=part_file_hash.hash, offset=part_file_hash.offset, size=part_file_hash.size)
 
@@ -116,9 +116,9 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
             context.abort(grpc.StatusCode.PERMISSION_DENIED, "User id does not match the file id.")
         changes = [FileChange(offset=part.offset, size=part.size, data=part.data) for part in request.parts]
         file_hashes = self.storage_db.sync_file(request.user_id, metadata.id, changes)
-        self.metadata_db.update_file_hashes(request.file_id, file_hashes)
         metadata.hash = self.storage_db.calculate_hash(request.user_id, metadata.id)
         self.metadata_db.update_metadata(request.file_id, metadata)
+        self.metadata_db.update_file_hashes(request.file_id, file_hashes)
         return True
 
 
