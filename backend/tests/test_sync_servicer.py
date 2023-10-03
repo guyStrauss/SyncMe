@@ -31,6 +31,18 @@ class ServicerTests(MetadataBaseTest, StorageBaseTest):
         self.assertEqual(response.user_id, file.user_id)
         self.assertEqual(response.last_modified, file.last_modified)
 
+    def test_does_file_exist(self):
+        file = self.__generate_random_file()
+        inserted_id = self.stub.upload_file(file, context=None)
+        response = self.stub.does_file_exist(file_sync_pb2.FileRequest(file_id=inserted_id, user_id=USER_ID),
+                                             context=None)
+        self.assertTrue(response)
+
+    def test_file_doesnt_exist(self):
+        response = self.stub.does_file_exist(file_sync_pb2.FileRequest(file_id="0" * 24, user_id=USER_ID),
+                                             context=None)
+        self.assertFalse(response)
+
     def test_get_files(self):
         files = [self.__generate_random_file() for _ in range(10)]
         inserted_ids = [self.stub.upload_file(file, context=None) for file in files]
