@@ -41,9 +41,9 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         """
         Check if the file is the latest version.
         """
-        self._logger.info("check_version called with hash: %s", request.hash)
-        metadata = self.metadata_db.get_metadata(request.hash)
-        return metadata.hash == request.hash
+        self._logger.info("check_version called with hash: %s", request.file_id)
+        metadata = self.metadata_db.get_metadata(request.file_id)
+        return metadata.hash == request.hash if metadata else False
 
     def does_file_exist(self, request: file_sync_pb2.FileRequest, context):
         """
@@ -73,6 +73,24 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         return file_sync_pb2.FileList(
             files=[file_sync_pb2.FileRequest(user_id=metadata.user_id, file_id=metadata.id)
                    for metadata in metadata])
+
+    def delete_file(self, request, context):
+        """
+        Delete the file from the storage.
+        """
+        self._logger.info("delete_file called")
+        metadata = self.metadata_db.get_metadata(request.file_id)
+        if not metadata:
+            return False
+        if request.user_id != metadata.user_id:
+            context.abort(grpc.StatusCode.PERMISSION_DENIED, "User id does not match the file id.")
+        try:
+            self.metadata_db.delete_metadata(request.file_id)
+            self.storage_db.delete_file(request.user_id, metadata.hash)
+        except Exception as e:
+            self._logger.error("Error while deleting the file: {}".format(e))
+            return False
+        return True
 
 
 def serve():

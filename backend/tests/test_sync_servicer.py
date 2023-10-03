@@ -3,7 +3,6 @@ import unittest
 
 from google.protobuf.timestamp_pb2 import Timestamp
 
-from backend.databases.filesystem_database import FILENAME
 from backend.file_sync_servicer import FileSyncServicer
 from backend.tests.base.metadata_base_test import MetadataBaseTest
 from backend.tests.base.storage_base_test import StorageBaseTest
@@ -43,6 +42,26 @@ class ServicerTests(MetadataBaseTest, StorageBaseTest):
                                              context=None)
         self.assertFalse(response)
 
+    def test_check_version(self):
+        file = self.__generate_random_file()
+        inserted_id = self.stub.upload_file(file, context=None)
+        response = self.stub.check_version(file_sync_pb2.CompareHash(hash=file.hash, file_id=inserted_id), context=None)
+        self.assertTrue(response)
+
+    def test_check_version_doesnt_exist(self):
+        response = self.stub.check_version(file_sync_pb2.CompareHash(hash="", file_id="0" * 24), context=None)
+        self.assertFalse(response)
+
+    def test_delete_file(self):
+        file = self.__generate_random_file()
+        inserted_id = self.stub.upload_file(file, context=None)
+        response = self.stub.delete_file(file_sync_pb2.FileRequest(file_id=inserted_id, user_id=USER_ID), context=None)
+        self.assertTrue(response)
+
+    def test_delete_file_doesnt_exist(self):
+        response = self.stub.delete_file(file_sync_pb2.FileRequest(file_id="0" * 24, user_id=USER_ID), context=None)
+        self.assertFalse(response)
+
     def test_get_files(self):
         files = [self.__generate_random_file() for _ in range(10)]
         inserted_ids = [self.stub.upload_file(file, context=None) for file in files]
@@ -53,7 +72,7 @@ class ServicerTests(MetadataBaseTest, StorageBaseTest):
 
     def __generate_random_file(self, size: int = 5 * MEGA_BYTE) -> [bytes, str]:
         file_data, file_hash = super()._generate_random_file(size)
-        file_name = FILENAME + str(random.randrange(0, 1000000))
+        file_name = str(random.randrange(0, 1000000))
         timestamp = Timestamp()
         timestamp.GetCurrentTime()
         timestamp.nanos = 0
