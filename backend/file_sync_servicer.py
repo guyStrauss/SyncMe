@@ -117,8 +117,8 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         changes = [FileChange(offset=part.offset, size=part.size, data=part.data) for part in request.parts]
         file_hashes = self.storage_db.sync_file(request.user_id, metadata.id, changes)
         metadata.hash = self.storage_db.calculate_hash(request.user_id, metadata.id)
+        metadata.hash_list = file_hashes
         self.metadata_db.update_metadata(request.file_id, metadata)
-        self.metadata_db.update_file_hashes(request.file_id, file_hashes)
         return True
 
 

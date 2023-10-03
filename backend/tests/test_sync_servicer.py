@@ -73,7 +73,7 @@ class ServicerTests(MetadataBaseTest, StorageBaseTest):
             self.assertIn(file.file_id, inserted_ids)
 
     def test_sync_file(self):
-        file = self.__generate_random_file(MEGA_BYTE)
+        file = self.__generate_random_file()
         inserted_id = self.stub.upload_file(file, context=None)
         changes = []
         for _ in range(10):
