@@ -1,6 +1,7 @@
 """
 For now, POC for the client side of the application.
 """
+import logging
 import threading
 from queue import Queue
 
@@ -12,6 +13,7 @@ from client.watcher import DirectoryHandler
 
 
 def main():
+    logging.basicConfig(level=logging.INFO)
     queue = Queue()
     observer = Observer()
     event_handler = DirectoryHandler(queue)

@@ -16,5 +16,15 @@ class ClientDatabase:
         query = tinydb.Query()
         return self.table.get(tinydb.Query().file_name == file_name)
 
+    def get_file_by_id(self, file_id):
+        query = tinydb.Query()
+        return self.table.get(tinydb.Query().file_id == file_id)
+
     def delete_record(self, file_name):
         self.table.remove(tinydb.Query().file_name == file_name)
+
+    def update_file_hash(self, file_id, file_hash):
+        self.table.update({'file_hash': file_hash}, tinydb.Query().file_id == file_id)
+
+    def update_file_name(self, file_old_name, file_new_name):
+        self.table.update({'file_name': file_new_name}, tinydb.Query().file_name == file_old_name)

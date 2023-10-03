@@ -136,7 +136,10 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
 
 
 def serve():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10), options=[
+        ('grpc.max_send_message_length', 1024 * 1024 * 1024),
+        ('grpc.max_receive_message_length', 1024 * 1024 * 1024)
+    ])
     file_sync_pb2_grpc.add_FileSyncServicer_to_server(FileSyncServicer(), server)
     server.add_insecure_port('[::]:50051')
     server.start()

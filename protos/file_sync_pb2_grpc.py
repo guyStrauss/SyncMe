@@ -47,7 +47,7 @@ class FileSyncStub(object):
         )
         self.get_file_hashes = channel.unary_stream(
             '/FileSync/get_file_hashes',
-            request_serializer=file__sync__pb2.FileHashes.SerializeToString,
+            request_serializer=file__sync__pb2.FileRequest.SerializeToString,
             response_deserializer=file__sync__pb2.Block.FromString,
         )
         self.get_file_list = channel.unary_unary(
@@ -154,7 +154,7 @@ def add_FileSyncServicer_to_server(servicer, server):
         ),
         'get_file_hashes': grpc.unary_stream_rpc_method_handler(
             servicer.get_file_hashes,
-            request_deserializer=file__sync__pb2.FileHashes.FromString,
+            request_deserializer=file__sync__pb2.FileRequest.FromString,
             response_serializer=file__sync__pb2.Block.SerializeToString,
         ),
         'get_file_list': grpc.unary_unary_rpc_method_handler(
@@ -291,7 +291,7 @@ class FileSync(object):
                         timeout=None,
                         metadata=None):
         return grpc.experimental.unary_stream(request, target, '/FileSync/get_file_hashes',
-                                              file__sync__pb2.FileHashes.SerializeToString,
+                                              file__sync__pb2.FileRequest.SerializeToString,
                                               file__sync__pb2.Block.FromString,
                                               options, channel_credentials,
                                               insecure, call_credentials, compression, wait_for_ready, timeout,

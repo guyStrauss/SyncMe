@@ -16,14 +16,18 @@ class DirectoryHandler(FileSystemEventHandler):
         self.queue = queue
 
     def on_modified(self, event):
-        if not event.is_directory:
-            # This function is called when a file is modified
-            print(f'File {event.src_path} has been modified')
+        if event.is_directory:
+            return
+        # This function is called when a file is modified
+        self.queue.put(Event(
+            type=EventType.MODIFIED,
+            time=datetime.datetime.now(),
+            src_path=event.src_path
+        ))
 
     def on_created(self, event):
         if event.is_directory:
             return
-        print(f'File {event.src_path} has been created')
         self.queue.put(Event(
             type=EventType.CREATED,
             time=datetime.datetime.now(),
@@ -31,7 +35,6 @@ class DirectoryHandler(FileSystemEventHandler):
         ))
 
     def on_deleted(self, event):
-        print(f'File {event.src_path} has been deleted')
         self.queue.put(Event(
             type=EventType.DELETED,
             time=datetime.datetime.now(),
@@ -40,3 +43,9 @@ class DirectoryHandler(FileSystemEventHandler):
 
     def on_moved(self, event):
         print(f'File {event.src_path} has been moved to {event.dest_path}')
+        self.queue.put(Event(
+            type=EventType.MOVED,
+            time=datetime.datetime.now(),
+            src_path=event.src_path,
+            dest_path=event.dest_path
+        ))

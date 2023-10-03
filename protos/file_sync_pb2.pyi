@@ -82,13 +82,3 @@ class Block(_message.Message):
     size: int
     offset: int
     def __init__(self, hash: _Optional[str] = ..., size: _Optional[int] = ..., offset: _Optional[int] = ...) -> None: ...
-
-class FileHashes(_message.Message):
-    __slots__ = ["user_id", "file_id", "block_size"]
-    USER_ID_FIELD_NUMBER: _ClassVar[int]
-    FILE_ID_FIELD_NUMBER: _ClassVar[int]
-    BLOCK_SIZE_FIELD_NUMBER: _ClassVar[int]
-    user_id: str
-    file_id: str
-    block_size: int
-    def __init__(self, user_id: _Optional[str] = ..., file_id: _Optional[str] = ..., block_size: _Optional[int] = ...) -> None: ...
