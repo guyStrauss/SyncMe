@@ -1,14 +1,27 @@
 """
 For now, POC for the client side of the application.
 """
-import grpc
-from protos import file_sync_pb2_grpc, file_sync_pb2
+import time
+
+from watchdog.observers import Observer
+
+from client.constants import DIRECTORY
+from client.watcher import DirectoryHandler
 
 
 def main():
-    with grpc.insecure_channel("localhost:50051") as channel:
-        stub = file_sync_pb2_grpc.FileSyncStub(channel)
-        stub.GetFile(file_sync_pb2.FileRequest( hash="1234567890"))
+    observer = Observer()
+    event_handler = DirectoryHandler()
+    observer.schedule(event_handler, DIRECTORY, recursive=True)
+    observer.start()
+
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        # Stop the observer gracefully if the user presses Ctrl+C
+        observer.stop()
+    observer.join()
 
 
 if __name__ == '__main__':

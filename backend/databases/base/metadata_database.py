@@ -21,7 +21,7 @@ class MetadataDatabase(object):
         Get the metadata of the file.
         :param file_hash: The hash of the file.
         :return: The metadata of the file.
-        :rtype: FileMetadata
+        :rtype: InsertedFileMetadata
         """
         raise NotImplementedError("This method is not implemented yet.")
 
@@ -49,7 +49,7 @@ class MetadataDatabase(object):
         Get all the metadata of the files.
         :param user_id: The id of the user.
         :return: The metadata of the files.
-        :rtype: list[FileMetadata]
+        :rtype: list[InsertedFileMetadata]
         """
         raise NotImplementedError("This method is not implemented yet.")
 
