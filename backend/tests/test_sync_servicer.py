@@ -24,7 +24,7 @@ class ServicerTests(MetadataBaseTest, StorageBaseTest):
 
     def test_get_file(self):
         file = self.__generate_random_file()
-        inserted_id = self.stub.upload_file(file, context=None)
+        inserted_id = self.stub.upload_file(file, context=None).value
         response = self.stub.get_file(file_sync_pb2.FileRequest(file_id=inserted_id, user_id=USER_ID), context=None)
         self.assertEqual(response.data, file.data)
         self.assertEqual(response.hash, file.hash)
@@ -34,39 +34,42 @@ class ServicerTests(MetadataBaseTest, StorageBaseTest):
 
     def test_does_file_exist(self):
         file = self.__generate_random_file()
-        inserted_id = self.stub.upload_file(file, context=None)
+        inserted_id = self.stub.upload_file(file, context=None).value
         response = self.stub.does_file_exist(file_sync_pb2.FileRequest(file_id=inserted_id, user_id=USER_ID),
-                                             context=None)
+                                             context=None).value
         self.assertTrue(response)
 
     def test_file_doesnt_exist(self):
         response = self.stub.does_file_exist(file_sync_pb2.FileRequest(file_id="0" * 24, user_id=USER_ID),
-                                             context=None)
+                                             context=None).value
         self.assertFalse(response)
 
     def test_check_version(self):
         file = self.__generate_random_file()
-        inserted_id = self.stub.upload_file(file, context=None)
-        response = self.stub.check_version(file_sync_pb2.CompareHash(hash=file.hash, file_id=inserted_id), context=None)
+        inserted_id = self.stub.upload_file(file, context=None).value
+        response = self.stub.check_version(file_sync_pb2.CompareHash(hash=file.hash, file_id=inserted_id),
+                                           context=None).value
         self.assertTrue(response)
 
     def test_check_version_doesnt_exist(self):
-        response = self.stub.check_version(file_sync_pb2.CompareHash(hash="", file_id="0" * 24), context=None)
+        response = self.stub.check_version(file_sync_pb2.CompareHash(hash="", file_id="0" * 24), context=None).value
         self.assertFalse(response)
 
     def test_delete_file(self):
         file = self.__generate_random_file()
-        inserted_id = self.stub.upload_file(file, context=None)
-        response = self.stub.delete_file(file_sync_pb2.FileRequest(file_id=inserted_id, user_id=USER_ID), context=None)
+        inserted_id = self.stub.upload_file(file, context=None).value
+        response = self.stub.delete_file(file_sync_pb2.FileRequest(file_id=inserted_id, user_id=USER_ID),
+                                         context=None).value
         self.assertTrue(response)
 
     def test_delete_file_doesnt_exist(self):
-        response = self.stub.delete_file(file_sync_pb2.FileRequest(file_id="0" * 24, user_id=USER_ID), context=None)
+        response = self.stub.delete_file(file_sync_pb2.FileRequest(file_id="0" * 24, user_id=USER_ID),
+                                         context=None).value
         self.assertFalse(response)
 
     def test_get_files(self):
         files = [self.__generate_random_file() for _ in range(10)]
-        inserted_ids = [self.stub.upload_file(file, context=None) for file in files]
+        inserted_ids = [self.stub.upload_file(file, context=None).value for file in files]
         response = self.stub.get_file_list(file_sync_pb2.FileRequest(user_id=USER_ID), context=None)
         self.assertEqual(len(response.files), len(files))
         for file in response.files:
@@ -74,7 +77,7 @@ class ServicerTests(MetadataBaseTest, StorageBaseTest):
 
     def test_sync_file(self):
         file = self.__generate_random_file()
-        inserted_id = self.stub.upload_file(file, context=None)
+        inserted_id = self.stub.upload_file(file, context=None).value
         changes = []
         for _ in range(10):
             changes.append(file_sync_pb2.FilePart(offset=random.randrange(0, len(file.data)),
@@ -100,7 +103,7 @@ class ServicerTests(MetadataBaseTest, StorageBaseTest):
 
     def test_update_name(self):
         file = self.__generate_random_file()
-        inserted_id = self.stub.upload_file(file, context=None)
+        inserted_id = self.stub.upload_file(file, context=None).value
         new_name = "new_name"
         response = self.stub.update_file_name(file_sync_pb2.UpdateFileName(file_id=inserted_id, user_id=USER_ID,
                                                                            new_name=new_name), context=None)

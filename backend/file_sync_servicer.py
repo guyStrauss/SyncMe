@@ -3,6 +3,7 @@ from concurrent import futures
 from datetime import datetime
 
 import grpc
+from google.protobuf import wrappers_pb2 as wrappers
 from google.protobuf.timestamp_pb2 import Timestamp
 
 from backend.databases.filesystem_database import FilesystemDatabase
@@ -44,14 +45,14 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         """
         self._logger.info("check_version called with hash: %s", request.file_id)
         metadata = self.metadata_db.get_metadata(request.file_id)
-        return metadata.hash == request.hash if metadata else False
+        return wrappers.BoolValue(value=metadata.hash == request.hash if metadata else False)
 
     def does_file_exist(self, request: file_sync_pb2.FileRequest, context):
         """
         Check if the file exists.
         """
         metadata = self.metadata_db.get_metadata(request.file_id)
-        return metadata is not None
+        return wrappers.BoolValue(value=metadata is not None)
 
     def upload_file(self, request, context):
         """
@@ -64,7 +65,7 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         inserted_id = self.metadata_db.insert_metadata(metadata)
         file_hashes = self.storage_db.upload_file(request.user_id, inserted_id, request.data)
         self.metadata_db.update_file_hashes(inserted_id, file_hashes)
-        return inserted_id
+        return wrappers.StringValue(value=inserted_id)
 
     def get_file_list(self, request, context):
         """
@@ -83,7 +84,7 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         self._logger.info("delete_file called")
         metadata = self.metadata_db.get_metadata(request.file_id)
         if not metadata:
-            return False
+            return wrappers.BoolValue(value=False)
         if request.user_id != metadata.user_id:
             context.abort(grpc.StatusCode.PERMISSION_DENIED, "User id does not match the file id.")
         try:
@@ -91,8 +92,8 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
             self.storage_db.delete_file(request.user_id, metadata.hash)
         except Exception as e:
             self._logger.error("Error while deleting the file: {}".format(e))
-            return False
-        return True
+            return wrappers.BoolValue(value=False)
+        return wrappers.BoolValue(value=True)
 
     def get_file_hashes(self, request, context):
         """
@@ -119,7 +120,7 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         metadata.hash = self.storage_db.calculate_hash(request.user_id, metadata.id)
         metadata.hash_list = file_hashes
         self.metadata_db.update_metadata(request.file_id, metadata)
-        return True
+        return wrappers.BoolValue(value=True)
 
     def update_file_name(self, request, context):
         """
@@ -131,7 +132,7 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
             context.abort(grpc.StatusCode.PERMISSION_DENIED, "User id does not match the file id.")
         metadata.path = request.new_name
         self.metadata_db.update_metadata(request.file_id, metadata)
-        return True
+        return wrappers.BoolValue(value=True)
 
 
 def serve():
