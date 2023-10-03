@@ -54,11 +54,21 @@ class FilePart(_message.Message):
     def __init__(self, data: _Optional[bytes] = ..., hash: _Optional[str] = ..., part: _Optional[int] = ...) -> None: ...
 
 class Block(_message.Message):
-    __slots__ = ["hash", "size", "part"]
+    __slots__ = ["hash", "size", "offset"]
     HASH_FIELD_NUMBER: _ClassVar[int]
     SIZE_FIELD_NUMBER: _ClassVar[int]
-    PART_FIELD_NUMBER: _ClassVar[int]
+    OFFSET_FIELD_NUMBER: _ClassVar[int]
     hash: str
-    size: str
-    part: int
-    def __init__(self, hash: _Optional[str] = ..., size: _Optional[str] = ..., part: _Optional[int] = ...) -> None: ...
+    size: int
+    offset: int
+    def __init__(self, hash: _Optional[str] = ..., size: _Optional[int] = ..., offset: _Optional[int] = ...) -> None: ...
+
+class FileHashes(_message.Message):
+    __slots__ = ["user_id", "file_id", "block_size"]
+    USER_ID_FIELD_NUMBER: _ClassVar[int]
+    FILE_ID_FIELD_NUMBER: _ClassVar[int]
+    BLOCK_SIZE_FIELD_NUMBER: _ClassVar[int]
+    user_id: str
+    file_id: str
+    block_size: int
+    def __init__(self, user_id: _Optional[str] = ..., file_id: _Optional[str] = ..., block_size: _Optional[int] = ...) -> None: ...
