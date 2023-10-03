@@ -1,5 +1,5 @@
 from backend.models.file_medadata import FileMetadata
 
 
-class ExportedFileMetadata(FileMetadata):
+class InsertedFileMetadata(FileMetadata):
     id: str
