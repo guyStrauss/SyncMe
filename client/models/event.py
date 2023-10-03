@@ -1,6 +1,7 @@
 """
 Represents an event that occurred in the directory.
 """
+import datetime
 import enum
 
 from pydantic import BaseModel
@@ -16,5 +17,6 @@ class EventType(enum.Enum):
 
 class Event(BaseModel):
     type: EventType
+    time: datetime.datetime
     src_path: str
     dest_path: str = None
