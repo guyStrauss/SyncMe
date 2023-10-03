@@ -32,6 +32,11 @@ class DirectoryHandler(FileSystemEventHandler):
 
     def on_deleted(self, event):
         print(f'File {event.src_path} has been deleted')
+        self.queue.put(Event(
+            type=EventType.DELETED,
+            time=datetime.datetime.now(),
+            src_path=event.src_path
+        ))
 
     def on_moved(self, event):
         print(f'File {event.src_path} has been moved to {event.dest_path}')

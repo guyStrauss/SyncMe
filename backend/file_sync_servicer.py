@@ -89,7 +89,7 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
             context.abort(grpc.StatusCode.PERMISSION_DENIED, "User id does not match the file id.")
         try:
             self.metadata_db.delete_metadata(request.file_id)
-            self.storage_db.delete_file(request.user_id, metadata.hash)
+            self.storage_db.delete_file(request.user_id, metadata.id)
         except Exception as e:
             self._logger.error("Error while deleting the file: {}".format(e))
             return wrappers.BoolValue(value=False)

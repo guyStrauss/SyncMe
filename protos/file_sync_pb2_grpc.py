@@ -42,7 +42,7 @@ class FileSyncStub(object):
         )
         self.delete_file = channel.unary_unary(
             '/FileSync/delete_file',
-            request_serializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
+            request_serializer=file__sync__pb2.FileRequest.SerializeToString,
             response_deserializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
         )
         self.get_file_hashes = channel.unary_stream(
@@ -149,7 +149,7 @@ def add_FileSyncServicer_to_server(servicer, server):
         ),
         'delete_file': grpc.unary_unary_rpc_method_handler(
             servicer.delete_file,
-            request_deserializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
+            request_deserializer=file__sync__pb2.FileRequest.FromString,
             response_serializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.SerializeToString,
         ),
         'get_file_hashes': grpc.unary_stream_rpc_method_handler(
@@ -274,7 +274,7 @@ class FileSync(object):
                     timeout=None,
                     metadata=None):
         return grpc.experimental.unary_unary(request, target, '/FileSync/delete_file',
-                                             google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
+                                             file__sync__pb2.FileRequest.SerializeToString,
                                              google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
                                              options, channel_credentials,
                                              insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

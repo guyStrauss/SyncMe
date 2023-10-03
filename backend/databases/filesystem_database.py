@@ -65,6 +65,7 @@ class FilesystemDatabase(StorageDatabase):
         :rtype: bool
         """
         file_path = self.__get_file_path(user_id, file_id)
+        logging.info(f"Deleting file: {file_path}")
         try:
             os.remove(file_path)
             return True
@@ -129,7 +130,7 @@ class FilesystemDatabase(StorageDatabase):
         for i in range(0, len(file), BLOCK_SIZE):
             part_data = file[i:i + BLOCK_SIZE]
             parts_hashes.append(FilePartHash(hash=hashlib.sha256(part_data).hexdigest(), offset=i, size=len(part_data)))
-        with zipfile.ZipFile(file_path, 'w') as zip_file:
+        with zipfile.ZipFile(file_path, 'w', zipfile.ZIP_DEFLATED) as zip_file:
             zip_file.writestr(FILENAME, file)
         return parts_hashes
 

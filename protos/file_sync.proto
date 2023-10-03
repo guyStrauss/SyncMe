@@ -9,7 +9,7 @@ service FileSync
   rpc check_version (CompareHash) returns (google.protobuf.BoolValue) {}
   rpc get_file (FileRequest) returns (File) {}
   rpc upload_file (File) returns (google.protobuf.StringValue) {}
-  rpc delete_file (google.protobuf.StringValue) returns (google.protobuf.BoolValue) {}
+  rpc delete_file (FileRequest) returns (google.protobuf.BoolValue) {}
   rpc get_file_hashes (FileHashes) returns (stream Block) {}
   rpc get_file_list (google.protobuf.StringValue) returns (FileList) {}
   rpc update_file_name(UpdateFileName) returns (google.protobuf.BoolValue) {}
@@ -23,6 +23,7 @@ message FileList
 {
   repeated FileRequest files = 1;
 }
+
 message FileRequest
 {
   string user_id = 1;
