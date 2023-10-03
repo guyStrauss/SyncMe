@@ -20,9 +20,9 @@ class FileSyncStub(object):
             request_serializer=file__sync__pb2.FileRequest.SerializeToString,
             response_deserializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
         )
-        self.sync_file = channel.stream_unary(
+        self.sync_file = channel.unary_unary(
             '/FileSync/sync_file',
-            request_serializer=file__sync__pb2.FilePart.SerializeToString,
+            request_serializer=file__sync__pb2.FileSyncRequest.SerializeToString,
             response_deserializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
         )
         self.check_version = channel.unary_unary(
@@ -66,7 +66,7 @@ class FileSyncServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def sync_file(self, request_iterator, context):
+    def sync_file(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -116,9 +116,9 @@ def add_FileSyncServicer_to_server(servicer, server):
             request_deserializer=file__sync__pb2.FileRequest.FromString,
             response_serializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.SerializeToString,
         ),
-        'sync_file': grpc.stream_unary_rpc_method_handler(
+        'sync_file': grpc.unary_unary_rpc_method_handler(
             servicer.sync_file,
-            request_deserializer=file__sync__pb2.FilePart.FromString,
+            request_deserializer=file__sync__pb2.FileSyncRequest.FromString,
             response_serializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
         ),
         'check_version': grpc.unary_unary_rpc_method_handler(
@@ -179,7 +179,7 @@ class FileSync(object):
                                              insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def sync_file(request_iterator,
+    def sync_file(request,
                   target,
                   options=(),
                   channel_credentials=None,
@@ -189,12 +189,11 @@ class FileSync(object):
                   wait_for_ready=None,
                   timeout=None,
                   metadata=None):
-        return grpc.experimental.stream_unary(request_iterator, target, '/FileSync/sync_file',
-                                              file__sync__pb2.FilePart.SerializeToString,
-                                              google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
-                                              options, channel_credentials,
-                                              insecure, call_credentials, compression, wait_for_ready, timeout,
-                                              metadata)
+        return grpc.experimental.unary_unary(request, target, '/FileSync/sync_file',
+                                             file__sync__pb2.FileSyncRequest.SerializeToString,
+                                             google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
+                                             options, channel_credentials,
+                                             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
     def check_version(request,

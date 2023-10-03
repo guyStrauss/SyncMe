@@ -44,14 +44,24 @@ class File(_message.Message):
     def __init__(self, user_id: _Optional[str] = ..., hash: _Optional[str] = ..., name: _Optional[str] = ..., data: _Optional[bytes] = ..., last_modified: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
 
 class FilePart(_message.Message):
-    __slots__ = ["data", "hash", "part"]
+    __slots__ = ["data", "size", "offset"]
     DATA_FIELD_NUMBER: _ClassVar[int]
-    HASH_FIELD_NUMBER: _ClassVar[int]
-    PART_FIELD_NUMBER: _ClassVar[int]
+    SIZE_FIELD_NUMBER: _ClassVar[int]
+    OFFSET_FIELD_NUMBER: _ClassVar[int]
     data: bytes
-    hash: str
-    part: int
-    def __init__(self, data: _Optional[bytes] = ..., hash: _Optional[str] = ..., part: _Optional[int] = ...) -> None: ...
+    size: int
+    offset: int
+    def __init__(self, data: _Optional[bytes] = ..., size: _Optional[int] = ..., offset: _Optional[int] = ...) -> None: ...
+
+class FileSyncRequest(_message.Message):
+    __slots__ = ["user_id", "file_id", "parts"]
+    USER_ID_FIELD_NUMBER: _ClassVar[int]
+    FILE_ID_FIELD_NUMBER: _ClassVar[int]
+    PARTS_FIELD_NUMBER: _ClassVar[int]
+    user_id: str
+    file_id: str
+    parts: _containers.RepeatedCompositeFieldContainer[FilePart]
+    def __init__(self, user_id: _Optional[str] = ..., file_id: _Optional[str] = ..., parts: _Optional[_Iterable[_Union[FilePart, _Mapping]]] = ...) -> None: ...
 
 class Block(_message.Message):
     __slots__ = ["hash", "size", "offset"]

@@ -5,7 +5,7 @@ import "google/protobuf/timestamp.proto";
 service FileSync
 {
   rpc does_file_exist (FileRequest) returns (google.protobuf.BoolValue) {}
-  rpc sync_file (stream FilePart) returns (google.protobuf.StringValue) {}
+  rpc sync_file (FileSyncRequest) returns (google.protobuf.StringValue) {}
   rpc check_version (CompareHash) returns (google.protobuf.BoolValue) {}
   rpc get_file (FileRequest) returns (File) {}
   rpc upload_file (File) returns (google.protobuf.StringValue) {}
@@ -42,9 +42,16 @@ message File
 
 message FilePart
 {
-  bytes data = 1;
-  string hash = 2;
-  int32 part = 3;
+  bytes data = 3;
+  int32 size = 4;
+  int32 offset = 5;
+}
+
+message FileSyncRequest
+{
+  string user_id = 1;
+  string file_id = 2;
+  repeated FilePart parts = 3;
 }
 
 message Block

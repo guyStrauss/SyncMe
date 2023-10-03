@@ -1,3 +1,4 @@
+import hashlib
 import random
 import unittest
 
@@ -69,6 +70,23 @@ class ServicerTests(MetadataBaseTest, StorageBaseTest):
         self.assertEqual(len(response.files), len(files))
         for file in response.files:
             self.assertIn(file.file_id, inserted_ids)
+
+    def test_sync_file(self):
+        file = self.__generate_random_file()
+        inserted_id = self.stub.upload_file(file, context=None)
+        changes = []
+        for _ in range(10):
+            changes.append(file_sync_pb2.FilePart(offset=random.randrange(0, len(file.data)),
+                                                  data=self.__generate_random_file(size=1024).data))
+        response = self.stub.sync_file(file_sync_pb2.FileSyncRequest(file_id=inserted_id, user_id=USER_ID,
+                                                                     parts=changes), context=None)
+        self.assertTrue(response)
+        for change in changes:
+            file.data = file.data[:change.offset] + change.data + file.data[change.offset + len(change.data):]
+        new_hash = hashlib.sha256(file.data).hexdigest()
+        new_metadata = self.stub.get_file(file_sync_pb2.FileRequest(file_id=inserted_id, user_id=USER_ID),
+                                          context=None)
+        self.assertEqual(new_hash, new_metadata.hash)
 
     def __generate_random_file(self, size: int = 5 * MEGA_BYTE) -> [bytes, str]:
         file_data, file_hash = super()._generate_random_file(size)

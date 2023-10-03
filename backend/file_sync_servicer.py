@@ -7,6 +7,7 @@ from google.protobuf.timestamp_pb2 import Timestamp
 
 from backend.databases.filesystem_database import FilesystemDatabase
 from backend.databases.mongo_database import MongoDatabase
+from backend.models.file_change import FileChange
 from backend.models.file_medadata import FileMetadata
 from protos import file_sync_pb2_grpc, file_sync_pb2
 
@@ -30,7 +31,7 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         metadata = self.metadata_db.get_metadata(request.file_id)
         if request.user_id != metadata.user_id:
             context.abort(grpc.StatusCode.PERMISSION_DENIED, "User id does not match the file id.")
-        file = self.storage_db.get_file(request.user_id, metadata.hash)
+        file = self.storage_db.get_file(request.user_id, metadata.id)
         timestamp = Timestamp()
         timestamp.FromDatetime(metadata.last_modified)
         return file_sync_pb2.File(name=metadata.path, data=file, hash=metadata.hash,
@@ -61,7 +62,7 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         metadata = FileMetadata(hash=request.hash, user_id=request.user_id, path=request.name,
                                 last_modified=last_modified)
         inserted_id = self.metadata_db.insert_metadata(metadata)
-        file_hashes = self.storage_db.upload_file(request.user_id, request.hash, request.data)
+        file_hashes = self.storage_db.upload_file(request.user_id, inserted_id, request.data)
         self.metadata_db.update_file_hashes(inserted_id, file_hashes)
         return inserted_id
 
@@ -104,6 +105,21 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         file_hashes = self.storage_db.get_file_hashes(request.user_id, metadata.hash, request.block_size)
         for part_file_hash in file_hashes:
             yield file_sync_pb2.Block(hash=part_file_hash.hash, offset=part_file_hash.offset, size=part_file_hash.size)
+
+    def sync_file(self, request, context):
+        """
+        Sync the file to the storage.
+        """
+        self._logger.info("sync_file called")
+        metadata = self.metadata_db.get_metadata(request.file_id)
+        if request.user_id != metadata.user_id:
+            context.abort(grpc.StatusCode.PERMISSION_DENIED, "User id does not match the file id.")
+        changes = [FileChange(offset=part.offset, size=part.size, data=part.data) for part in request.parts]
+        file_hashes = self.storage_db.sync_file(request.user_id, metadata.id, changes)
+        self.metadata_db.update_file_hashes(request.file_id, file_hashes)
+        metadata.hash = self.storage_db.calculate_hash(request.user_id, metadata.id)
+        self.metadata_db.update_metadata(request.file_id, metadata)
+        return True
 
 
 def serve():

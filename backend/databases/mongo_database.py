@@ -61,7 +61,7 @@ class MongoDatabase(MetadataDatabase):
         logger.info("Updating metadata in the database.")
         try:
             self.__collection.update_one(
-                {"_id": ObjectId(file_id)}, {"$set": metadata.model_dump()}
+                {"_id": ObjectId(file_id)}, {"$set": metadata.model_dump(exclude={"id"})}
             )
         except Exception as e:
             logger.error("Error while updating the metadata: {}".format(e))

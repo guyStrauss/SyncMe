@@ -45,7 +45,8 @@ class TestStorage(StorageBaseTest):
 
     def test_sync_file(self):
         file_data, file_hash = self._generate_random_file()
-        self.storage.upload_file(USER_ID, file_hash, file_data)
+        file_id = "123456789"
+        self.storage.upload_file(USER_ID, file_id, file_data)
         file_changes = []
         for _ in range(10):
             new_data = os.urandom(MEGA_BYTE // 3)
@@ -53,9 +54,8 @@ class TestStorage(StorageBaseTest):
             file_changes.append(FileChange(offset=offset, size=len(new_data), data=new_data))
         for change in file_changes:
             file_data = file_data[:change.offset] + change.data + file_data[change.offset + len(change.data):]
-        self.storage.sync_file(USER_ID, file_hash, file_changes)
-        new_file_hash = hashlib.sha256(file_data).hexdigest()
-        self.assertEqual(self.storage.get_file(USER_ID, new_file_hash), file_data)
+        self.storage.sync_file(USER_ID, file_id, file_changes)
+        self.assertEqual(self.storage.get_file(USER_ID, file_id), file_data)
 
 
 if __name__ == '__main__':

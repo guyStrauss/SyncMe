@@ -153,5 +153,4 @@ class FilesystemDatabase(StorageDatabase):
             new_hash = hashlib.sha256(bytes_io.getvalue()).hexdigest()
 
         file_hashes = self.__write_file_to_disk(file_path, bytes_io.getvalue())
-        os.rename(self.__get_file_path(user_id, file_id), self.__get_file_path(user_id, new_hash))
         return file_hashes
