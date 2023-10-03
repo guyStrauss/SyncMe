@@ -55,6 +55,11 @@ class FileSyncStub(object):
             request_serializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
             response_deserializer=file__sync__pb2.FileList.FromString,
         )
+        self.update_file_name = channel.unary_unary(
+            '/FileSync/update_file_name',
+            request_serializer=file__sync__pb2.UpdateFileName.SerializeToString,
+            response_deserializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
+        )
 
 
 class FileSyncServicer(object):
@@ -108,6 +113,12 @@ class FileSyncServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def update_file_name(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_FileSyncServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -150,6 +161,11 @@ def add_FileSyncServicer_to_server(servicer, server):
             servicer.get_file_list,
             request_deserializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
             response_serializer=file__sync__pb2.FileList.SerializeToString,
+        ),
+        'update_file_name': grpc.unary_unary_rpc_method_handler(
+            servicer.update_file_name,
+            request_deserializer=file__sync__pb2.UpdateFileName.FromString,
+            response_serializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.SerializeToString,
         ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -295,5 +311,22 @@ class FileSync(object):
         return grpc.experimental.unary_unary(request, target, '/FileSync/get_file_list',
                                              google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
                                              file__sync__pb2.FileList.FromString,
+                                             options, channel_credentials,
+                                             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def update_file_name(request,
+                         target,
+                         options=(),
+                         channel_credentials=None,
+                         call_credentials=None,
+                         insecure=False,
+                         compression=None,
+                         wait_for_ready=None,
+                         timeout=None,
+                         metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/FileSync/update_file_name',
+                                             file__sync__pb2.UpdateFileName.SerializeToString,
+                                             google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
                                              options, channel_credentials,
                                              insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

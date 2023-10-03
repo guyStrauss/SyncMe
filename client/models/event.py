@@ -11,6 +11,7 @@ class EventType(enum.Enum):
     DELETED = "DELETED"
     MODIFIED = "MODIFIED"
     MOVED = "MOVED"
+    ROUTINE_CHECK = "ROUTINE_CHECK"
 
 
 class Event(BaseModel):

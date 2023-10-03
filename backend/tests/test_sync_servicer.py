@@ -98,6 +98,17 @@ class ServicerTests(MetadataBaseTest, StorageBaseTest):
                 hashlib.sha256(new_file_info.data[i:i + BLOCK_SIZE]).hexdigest())
         self.assertEqual(file_hashes, calculated_file_hashes)
 
+    def test_update_name(self):
+        file = self.__generate_random_file()
+        inserted_id = self.stub.upload_file(file, context=None)
+        new_name = "new_name"
+        response = self.stub.update_file_name(file_sync_pb2.UpdateFileName(file_id=inserted_id, user_id=USER_ID,
+                                                                           new_name=new_name), context=None)
+        self.assertTrue(response)
+        new_file_info = self.stub.get_file(file_sync_pb2.FileRequest(file_id=inserted_id, user_id=USER_ID),
+                                           context=None)
+        self.assertEqual(new_name, new_file_info.name)
+
     def __generate_random_file(self, size: int = 5 * MEGA_BYTE) -> [bytes, str]:
         file_data, file_hash = super()._generate_random_file(size)
         file_name = str(random.randrange(0, 1000000))

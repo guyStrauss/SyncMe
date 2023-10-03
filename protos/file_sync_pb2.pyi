@@ -7,6 +7,16 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
+class UpdateFileName(_message.Message):
+    __slots__ = ["user_id", "file_id", "new_name"]
+    USER_ID_FIELD_NUMBER: _ClassVar[int]
+    FILE_ID_FIELD_NUMBER: _ClassVar[int]
+    NEW_NAME_FIELD_NUMBER: _ClassVar[int]
+    user_id: str
+    file_id: str
+    new_name: str
+    def __init__(self, user_id: _Optional[str] = ..., file_id: _Optional[str] = ..., new_name: _Optional[str] = ...) -> None: ...
+
 class FileList(_message.Message):
     __slots__ = ["files"]
     FILES_FIELD_NUMBER: _ClassVar[int]

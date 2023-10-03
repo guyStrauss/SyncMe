@@ -12,8 +12,13 @@ service FileSync
   rpc delete_file (google.protobuf.StringValue) returns (google.protobuf.BoolValue) {}
   rpc get_file_hashes (FileHashes) returns (stream Block) {}
   rpc get_file_list (google.protobuf.StringValue) returns (FileList) {}
+  rpc update_file_name(UpdateFileName) returns (google.protobuf.BoolValue) {}
 }
-
+message UpdateFileName{
+  string user_id = 1;
+  string file_id = 2;
+  string new_name = 3;
+}
 message FileList
 {
   repeated FileRequest files = 1;

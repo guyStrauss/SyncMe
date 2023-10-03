@@ -121,6 +121,18 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         self.metadata_db.update_metadata(request.file_id, metadata)
         return True
 
+    def update_file_name(self, request, context):
+        """
+        Update the file name in the database.
+        """
+        self._logger.info("update_file_name called")
+        metadata = self.metadata_db.get_metadata(request.file_id)
+        if request.user_id != metadata.user_id:
+            context.abort(grpc.StatusCode.PERMISSION_DENIED, "User id does not match the file id.")
+        metadata.path = request.new_name
+        self.metadata_db.update_metadata(request.file_id, metadata)
+        return True
+
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
