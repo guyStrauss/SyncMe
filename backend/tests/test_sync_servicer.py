@@ -1,4 +1,5 @@
 import hashlib
+import os
 import random
 import unittest
 
@@ -81,7 +82,8 @@ class ServicerTests(MetadataBaseTest, StorageBaseTest):
         changes = []
         for _ in range(10):
             changes.append(file_sync_pb2.FilePart(offset=random.randrange(0, len(file.data)),
-                                                  data=self.__generate_random_file(size=1024).data, size=1024))
+                                                  data=self.__generate_random_file(size=BLOCK_SIZE).data,
+                                                  size=BLOCK_SIZE))
         response = self.stub.sync_file(file_sync_pb2.FileSyncRequest(file_id=inserted_id, user_id=USER_ID,
                                                                      parts=changes), context=None)
         self.assertTrue(response)
@@ -100,6 +102,33 @@ class ServicerTests(MetadataBaseTest, StorageBaseTest):
             calculated_file_hashes.append(
                 hashlib.sha256(new_file_info.data[i:i + BLOCK_SIZE]).hexdigest())
         self.assertEqual(file_hashes, calculated_file_hashes)
+
+    def test_sync_file_eof(self):
+        file = self.__generate_random_file()
+        inserted_id = self.stub.upload_file(file, context=None).value
+        changes = []
+        changes.append(file_sync_pb2.FilePart(offset=len(file.data) - BLOCK_SIZE, data=os.urandom(BLOCK_SIZE - 30),
+                                              size=BLOCK_SIZE - 30))
+        response = self.stub.sync_file(file_sync_pb2.FileSyncRequest(file_id=inserted_id, user_id=USER_ID,
+                                                                     parts=changes), context=None)
+        self.assertTrue(response)
+        file.data = file.data[:-BLOCK_SIZE] + changes[0].data
+        new_hash = hashlib.sha256(file.data).hexdigest()
+        new_file_info = self.stub.get_file(file_sync_pb2.FileRequest(file_id=inserted_id, user_id=USER_ID),
+                                           context=None)
+        self.assertEqual(new_hash, new_file_info.hash)
+        self.assertEqual(file.data, new_file_info.data)
+        file_hashes = [block.hash for block in
+                       self.stub.get_file_hashes(file_sync_pb2.FileRequest(file_id=inserted_id, user_id=USER_ID),
+                                                 context=None)]
+        calculated_file_hashes = []
+        for i in range(0, len(new_file_info.data), BLOCK_SIZE):
+            calculated_file_hashes.append(
+                hashlib.sha256(new_file_info.data[i:i + BLOCK_SIZE]).hexdigest())
+        self.assertEqual(file_hashes, calculated_file_hashes)
+
+    def test_sync_file_start(self):
+        pass
 
     def test_update_name(self):
         file = self.__generate_random_file()

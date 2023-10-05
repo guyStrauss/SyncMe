@@ -25,6 +25,7 @@ class FilesystemDatabase(StorageDatabase):
         :param root_path: The root path of the files.
         """
         self.root_path = root_path
+        self.zip_compress_level = zipfile.ZIP_DEFLATED
         if not os.path.exists(root_path):
             os.makedirs(root_path)
 
@@ -102,8 +103,7 @@ class FilesystemDatabase(StorageDatabase):
         """
         return os.path.join(self.root_path, user_id, file_id + FILE_EXTENSION)
 
-    @staticmethod
-    def __read_file_from_disk(file_path: str, offset: int = None, block: int = None) -> bytes:
+    def __read_file_from_disk(self, file_path: str, offset: int = None, block: int = None) -> bytes:
         """
         Read the file from the disk.
         :param file_path: The path of the file.
@@ -111,15 +111,14 @@ class FilesystemDatabase(StorageDatabase):
         :rtype: bytes
         """
         logging.debug(f"Reading file from disk: {file_path}")
-        with zipfile.ZipFile(file_path, 'r') as zip_file:
+        with zipfile.ZipFile(file_path, 'r', self.zip_compress_level) as zip_file:
             if offset is not None and block is not None:
                 with zip_file.open(FILENAME) as file:
                     file.seek(offset)
                     return file.read(block)
             return zip_file.read(FILENAME)
 
-    @staticmethod
-    def __write_file_to_disk(file_path: str, file: bytes) -> List[FilePartHash]:
+    def __write_file_to_disk(self, file_path: str, file: bytes) -> List[FilePartHash]:
         """
         Write the file to the disk, and calculate the hash of the file.
         :param file_path: The path of the file.
@@ -130,7 +129,7 @@ class FilesystemDatabase(StorageDatabase):
         for i in range(0, len(file), BLOCK_SIZE):
             part_data = file[i:i + BLOCK_SIZE]
             parts_hashes.append(FilePartHash(hash=hashlib.sha256(part_data).hexdigest(), offset=i, size=len(part_data)))
-        with zipfile.ZipFile(file_path, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        with zipfile.ZipFile(file_path, 'w', self.zip_compress_level) as zip_file:
             zip_file.writestr(FILENAME, file)
         return parts_hashes
 
@@ -146,11 +145,15 @@ class FilesystemDatabase(StorageDatabase):
         file_path = self.__get_file_path(user_id, file_id)
         bytes_io = BytesIO()
 
-        with zipfile.ZipFile(file_path, "r") as read_zip_file:
+        with zipfile.ZipFile(file_path, "r", self.zip_compress_level) as read_zip_file:
             bytes_io.write(read_zip_file.read(FILENAME))
-            for change in changes:
-                bytes_io.seek(change.offset)
-                bytes_io.write(change.data)
+        for change in changes:
+            bytes_io.seek(change.offset)
+            bytes_io.write(change.data)
+            if change.size < BLOCK_SIZE:
+                logging.debug("Change size is smaller than block size, probably end of file")
+                bytes_io.seek(change.offset + change.size)
+                bytes_io.truncate()
 
         file_hashes = self.__write_file_to_disk(file_path, bytes_io.getvalue())
         return file_hashes

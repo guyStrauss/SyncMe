@@ -3,12 +3,14 @@ This module is responsible for the communication between the client and the serv
 """
 import hashlib
 import logging
+import os
 import time
 from queue import Queue
 
 import grpc
 from google.protobuf.timestamp_pb2 import Timestamp
 
+from backend.databases.filesystem_database import BLOCK_SIZE
 from client.database import ClientDatabase
 from client.models.event import EventType, Event
 from protos import file_sync_pb2_grpc, file_sync_pb2
@@ -90,20 +92,28 @@ class RequestDispatcher:
         Handle the file modified event.
         """
         file_info = self.local_db.get_file(event.src_path)
-        file_changes = []
+        file_changes = {}
+        file_offset = 0
         try:
             with open(event.src_path, "rb") as file:
+                for i in range(file_offset, os.stat(event.src_path).st_size, BLOCK_SIZE):
+                    file.seek(i)
+                    file_part_content = file.read(BLOCK_SIZE)
+                    part_hash = hashlib.sha256(file_part_content).hexdigest()
+                    file_changes[part_hash] = file_sync_pb2.FilePart(offset=i, size=len(file_part_content),
+                                                                     data=file_part_content)
                 for file_part in self.stub.get_file_hashes(
                         file_sync_pb2.FileRequest(user_id="1", file_id=file_info["file_id"])):
-                    file.seek(file_part.offset)
-                    file_part_content = file.read(file_part.size)
-                    if file_part.hash != hashlib.sha256(file_part_content).hexdigest():
-                        file_changes.append(file_sync_pb2.FilePart(offset=file_part.offset, size=file_part.size,
-                                                                   data=file_part_content))
-                self.stub.sync_file(file_sync_pb2.FileSyncRequest(user_id="1", file_id=file_info["file_id"],
-                                                                  parts=file_changes))
-                file.seek(0)
-                new_hash = hashlib.sha256(file.read()).hexdigest()
+                    if file_part.hash in file_changes:
+                        del file_changes[file_part.hash]
+                # writing changes that occurred in the end of the file
+                # TODO if the last change, the size is to small to override something that comes after it
+                self.stub.sync_file(
+                    file_sync_pb2.FileSyncRequest(user_id="1", file_id=file_info["file_id"],
+                                                  parts=file_changes.values()))
+
+                with open(event.src_path, "rb") as file:
+                    new_hash = hashlib.sha256(file.read()).hexdigest()
                 self.local_db.update_file_hash(file_info["file_id"], new_hash)
                 logging.info(f"Updated file with id: {file_info['file_id']}, new hash: {new_hash}")
         except FileNotFoundError:

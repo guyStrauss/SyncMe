@@ -119,6 +119,7 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         file_hashes = self.storage_db.sync_file(request.user_id, metadata.id, changes)
         metadata.hash = self.storage_db.calculate_hash(request.user_id, metadata.id)
         metadata.hash_list = file_hashes
+        self._logger.info(f"Updated file with id: {metadata.id}, new hash: {metadata.hash}")
         self.metadata_db.update_metadata(request.file_id, metadata)
         return wrappers.BoolValue(value=True)
 
