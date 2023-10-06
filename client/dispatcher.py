@@ -1,6 +1,7 @@
 """
 This module is responsible for the communication between the client and the server.
 """
+import datetime
 import hashlib
 import logging
 import os
@@ -35,7 +36,7 @@ class RequestDispatcher:
         self.stub = file_sync_pb2_grpc.FileSyncStub(channel)
         self.local_db = ClientDatabase()
         self.handlers = {
-            EventType.STARTUP: self.startup,
+            EventType.ON_STARTUP: self.startup,
             EventType.CREATED: self.file_created,
             EventType.DELETED: self.file_deleted,
             EventType.MODIFIED: self.file_modified,
@@ -48,16 +49,28 @@ class RequestDispatcher:
         This function runs the dispatcher.
         run in a separate thread.
         """
+        self.startup()
         while True:
-            request = self.queue.get()
+            request = self.queue.get()  # type: Event
             print(f"Got request: {request}")
             self.handlers[request.type](request)
 
-    def startup(self, ):
+    def startup(self):
         """
         Get all the files from the server
         """
-        self.stub.get_file_list(wrappers.StringValue(value="1"))
+        file_list = self.stub.get_file_list(wrappers.StringValue(value="1"))
+        for file in file_list:
+            # TODO finish this
+            file_metadata = self.stub.get_file_metadata(file_sync_pb2.FileRequest(user_id="1", file_id=file.file_id))
+            if not self.local_db.get_file(file.name):
+                self.local_db.insert_file(file.file_id, file.name, file.hash,
+                                          datetime.datetime.fromtimestamp(file.last_modified.seconds))
+                file_data = self.stub.get_file(file_sync_pb2.FileRequest(user_id="1", file_id=file.file_id)).data
+                with open(file.name, "wb") as file_descriptor:
+                    file_descriptor.write(file_data)
+                self.local_db.update_file_timestamp(file.file_id, os.stat(file.name).st_mtime)
+                logging.info(f"Downloaded file with id: {file.file_id}")
 
     def file_created(self, event: Event):
         """

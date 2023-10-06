@@ -9,7 +9,7 @@ from pydantic import BaseModel
 
 
 class EventType(enum.Enum):
-    STARTUP = "STARTUP"
+    ON_STARTUP = "ON_STARTUP"
     CREATED = "CREATED"
     DELETED = "DELETED"
     MODIFIED = "MODIFIED"

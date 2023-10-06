@@ -11,7 +11,6 @@ from client.database import ClientDatabase
 from client.models.event import Event, EventType
 
 
-# TODO rewrite this class
 class DirectoryHandler:
 
     def __init__(self, queue: Queue, directory: str, recursive: bool = True, timeout: int = 1):
