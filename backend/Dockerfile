@@ -19,7 +19,7 @@ COPY protos /backend/protos
 COPY requirements.txt /backend/requirements.txt
 WORKDIR /backend
 RUN python3.10 -m pip install -r requirements.txt
-EXPOSE 50051
+
 
 FROM base AS prod
 CMD ["python3.10", "file_sync_servicer.py"]

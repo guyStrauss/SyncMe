@@ -72,7 +72,7 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         Get the list of files for the user.
         """
         self._logger.info("get_file_list called")
-        metadata = self.metadata_db.get_all_metadata(request.user_id)
+        metadata = self.metadata_db.get_all_metadata(request.value)
         return file_sync_pb2.FileList(
             files=[file_sync_pb2.FileRequest(user_id=metadata.user_id, file_id=metadata.id)
                    for metadata in metadata])
@@ -143,7 +143,7 @@ def serve():
     ])
     file_sync_pb2_grpc.add_FileSyncServicer_to_server(FileSyncServicer(), server)
     server.add_insecure_port('[::]:50051')
-    
+
     server.start()
     server.wait_for_termination()
 

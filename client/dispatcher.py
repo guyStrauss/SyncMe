@@ -1,7 +1,6 @@
 """
 This module is responsible for the communication between the client and the server.
 """
-import datetime
 import hashlib
 import logging
 import os
@@ -60,17 +59,18 @@ class RequestDispatcher:
         Get all the files from the server
         """
         file_list = self.stub.get_file_list(wrappers.StringValue(value="1"))
-        for file in file_list:
+        for file in file_list.files:
             # TODO finish this
-            file_metadata = self.stub.get_file_metadata(file_sync_pb2.FileRequest(user_id="1", file_id=file.file_id))
-            if not self.local_db.get_file(file.name):
-                self.local_db.insert_file(file.file_id, file.name, file.hash,
-                                          datetime.datetime.fromtimestamp(file.last_modified.seconds))
-                file_data = self.stub.get_file(file_sync_pb2.FileRequest(user_id="1", file_id=file.file_id)).data
-                with open(file.name, "wb") as file_descriptor:
-                    file_descriptor.write(file_data)
-                self.local_db.update_file_timestamp(file.file_id, os.stat(file.name).st_mtime)
-                logging.info(f"Downloaded file with id: {file.file_id}")
+            print(file.file_id)
+            # file_metadata = self.stub.get_file_metadata(file_sync_pb2.FileRequest(user_id="1", file_id=file.file_id))
+            # if not self.local_db.get_file(file.name):
+            #     self.local_db.insert_file(file.file_id, file.name, file.hash,
+            #                               datetime.datetime.fromtimestamp(file.last_modified.seconds))
+            #     file_data = self.stub.get_file(file_sync_pb2.FileRequest(user_id="1", file_id=file.file_id)).data
+            #     with open(file.name, "wb") as file_descriptor:
+            #         file_descriptor.write(file_data)
+            #     self.local_db.update_file_timestamp(file.file_id, os.stat(file.name).st_mtime)
+            #     logging.info(f"Downloaded file with id: {file.file_id}")
 
     def file_created(self, event: Event):
         """
