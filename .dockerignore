@@ -1,0 +1,8 @@
+venv/
+backend/storage/
+backend/tests/.pytest_cache/
+.idea/
+.github/
+.git/
+*__pycache__/
+.gitignore

@@ -8,9 +8,9 @@ import zipfile
 from io import BytesIO
 from typing import List
 
-from backend.databases.base.storage_database import StorageDatabase
-from backend.models.file_change import FileChange
-from backend.models.file_part_hash import FilePartHash
+from databases.base.storage_database import StorageDatabase
+from models.file_change import FileChange
+from models.file_part_hash import FilePartHash
 
 FILENAME = "file"
 FILE_EXTENSION = ".zip"

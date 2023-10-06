@@ -2,8 +2,8 @@ import unittest
 
 import pymongo
 
-from backend.databases.mongo_database import MongoDatabase, PORT, HOST
-from backend.tests.constants import METADATA_DATABASE_NAME
+from databases.mongo_database import MongoDatabase, PORT, HOST
+from tests.constants import METADATA_DATABASE_NAME
 
 
 class MetadataBaseTest(unittest.TestCase):

@@ -4,10 +4,10 @@ import random
 import unittest
 import zipfile
 
-from backend.databases.filesystem_database import FILENAME, BLOCK_SIZE
-from backend.models.file_change import FileChange
-from backend.tests.base.storage_base_test import StorageBaseTest
-from backend.tests.constants import USER_ID, MEGA_BYTE
+from databases.filesystem_database import FILENAME, BLOCK_SIZE
+from models.file_change import FileChange
+from tests.base.storage_base_test import StorageBaseTest
+from tests.constants import USER_ID, MEGA_BYTE
 
 
 class TestStorage(StorageBaseTest):

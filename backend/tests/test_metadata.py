@@ -1,10 +1,10 @@
 import unittest
 from datetime import datetime
 
-from backend.models.file_medadata import FileMetadata
-from backend.models.file_part_hash import FilePartHash
-from backend.tests.base.metadata_base_test import MetadataBaseTest
-from backend.tests.constants import FILE_HASH, FILE_NAME, USER_ID
+from models.file_medadata import FileMetadata
+from models.file_part_hash import FilePartHash
+from tests.base.metadata_base_test import MetadataBaseTest
+from tests.constants import FILE_HASH, FILE_NAME, USER_ID
 
 
 class MongoTests(MetadataBaseTest):

@@ -5,12 +5,12 @@ import unittest
 
 from google.protobuf.timestamp_pb2 import Timestamp
 
-from backend.databases.filesystem_database import BLOCK_SIZE
-from backend.file_sync_servicer import FileSyncServicer
-from backend.tests.base.metadata_base_test import MetadataBaseTest
-from backend.tests.base.storage_base_test import StorageBaseTest
-from backend.tests.constants import USER_ID, STORAGE_DIRECTORY, METADATA_DATABASE_NAME, MEGA_BYTE
+from databases.filesystem_database import BLOCK_SIZE
+from file_sync_servicer import FileSyncServicer
 from protos import file_sync_pb2
+from tests.base.metadata_base_test import MetadataBaseTest
+from tests.base.storage_base_test import StorageBaseTest
+from tests.constants import USER_ID, STORAGE_DIRECTORY, METADATA_DATABASE_NAME, MEGA_BYTE
 
 
 class ServicerTests(MetadataBaseTest, StorageBaseTest):

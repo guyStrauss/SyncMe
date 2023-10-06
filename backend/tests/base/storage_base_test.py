@@ -3,8 +3,8 @@ import os
 import shutil
 import unittest
 
-from backend.databases.filesystem_database import FilesystemDatabase
-from backend.tests.constants import STORAGE_DIRECTORY, MEGA_BYTE
+from databases.filesystem_database import FilesystemDatabase
+from tests.constants import STORAGE_DIRECTORY, MEGA_BYTE
 
 
 class StorageBaseTest(unittest.TestCase):

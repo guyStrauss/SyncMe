@@ -7,10 +7,10 @@ from typing import List
 from bson import ObjectId
 from pymongo import MongoClient
 
-from backend.databases.base.metadata_database import MetadataDatabase
-from backend.models.file_medadata import FileMetadata
-from backend.models.file_part_hash import FilePartHash
-from backend.models.inserted_file_metadata import InsertedFileMetadata
+from databases.base.metadata_database import MetadataDatabase
+from models.file_medadata import FileMetadata
+from models.file_part_hash import FilePartHash
+from models.inserted_file_metadata import InsertedFileMetadata
 
 PORT = 27017
 HOST = "localhost"

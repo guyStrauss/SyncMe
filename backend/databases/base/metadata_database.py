@@ -2,8 +2,8 @@
 This class will be responsible for the database metadata store and the interface for
 """
 
-from backend.models.file_medadata import FileMetadata
-from backend.models.file_part_hash import FilePartHash
+from models.file_medadata import FileMetadata
+from models.file_part_hash import FilePartHash
 
 
 class MetadataDatabase(object):

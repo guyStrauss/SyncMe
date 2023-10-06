@@ -6,10 +6,10 @@ import grpc
 from google.protobuf import wrappers_pb2 as wrappers
 from google.protobuf.timestamp_pb2 import Timestamp
 
-from backend.databases.filesystem_database import FilesystemDatabase
-from backend.databases.mongo_database import MongoDatabase
-from backend.models.file_change import FileChange
-from backend.models.file_medadata import FileMetadata
+from databases.filesystem_database import FilesystemDatabase
+from databases.mongo_database import MongoDatabase
+from models.file_change import FileChange
+from models.file_medadata import FileMetadata
 from protos import file_sync_pb2_grpc, file_sync_pb2
 
 STORAGE_DIRECTORY = "storage/"

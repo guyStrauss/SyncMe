@@ -10,9 +10,9 @@ from queue import Queue
 import grpc
 from google.protobuf.timestamp_pb2 import Timestamp
 
-from backend.databases.filesystem_database import BLOCK_SIZE
 from client.database import ClientDatabase
 from client.models.event import EventType, Event
+from databases.filesystem_database import BLOCK_SIZE
 from protos import file_sync_pb2_grpc, file_sync_pb2
 
 

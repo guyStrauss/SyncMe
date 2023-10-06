@@ -3,7 +3,7 @@ This Object will describe the interface for the storage database.
 """
 from typing import List
 
-from backend.models.file_change import FileChange
+from models.file_change import FileChange
 
 
 class StorageDatabase(object):
