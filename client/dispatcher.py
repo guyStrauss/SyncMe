@@ -8,6 +8,7 @@ import time
 from queue import Queue
 
 import grpc
+from google.protobuf import wrappers_pb2 as wrappers
 from google.protobuf.timestamp_pb2 import Timestamp
 
 from client.database import ClientDatabase
@@ -34,6 +35,7 @@ class RequestDispatcher:
         self.stub = file_sync_pb2_grpc.FileSyncStub(channel)
         self.local_db = ClientDatabase()
         self.handlers = {
+            EventType.STARTUP: self.startup,
             EventType.CREATED: self.file_created,
             EventType.DELETED: self.file_deleted,
             EventType.MODIFIED: self.file_modified,
@@ -50,6 +52,12 @@ class RequestDispatcher:
             request = self.queue.get()
             print(f"Got request: {request}")
             self.handlers[request.type](request)
+
+    def startup(self, ):
+        """
+        Get all the files from the server
+        """
+        self.stub.get_file_list(wrappers.StringValue(value="1"))
 
     def file_created(self, event: Event):
         """
@@ -73,7 +81,7 @@ class RequestDispatcher:
                                   hash=file_hash)
         file_id = self.stub.upload_file(file).value
         logging.info(f"Uploaded file with id: {file_id}")
-        self.local_db.insert_file(file_id, event.src_path, file_hash)
+        self.local_db.insert_file(file_id, event.src_path, file_hash, os.stat(event.src_path).st_mtime)
 
     def file_deleted(self, event: Event):
         """
@@ -86,6 +94,7 @@ class RequestDispatcher:
         if not result:
             logging.warning(f"Failed to delete file with id: {file_info['file_id']}")
             return
+        self.local_db.delete_record(event.src_path)
 
     def file_modified(self, event: Event):
         """
@@ -107,14 +116,16 @@ class RequestDispatcher:
                     if file_part.hash in file_changes:
                         del file_changes[file_part.hash]
                 # writing changes that occurred in the end of the file
-                # TODO if the last change, the size is to small to override something that comes after it
+                timestamp = Timestamp()
+                timestamp.FromDatetime(event.time)
                 self.stub.sync_file(
                     file_sync_pb2.FileSyncRequest(user_id="1", file_id=file_info["file_id"],
-                                                  parts=file_changes.values()))
+                                                  parts=file_changes.values(), last_modified=timestamp))
 
                 with open(event.src_path, "rb") as file:
                     new_hash = hashlib.sha256(file.read()).hexdigest()
                 self.local_db.update_file_hash(file_info["file_id"], new_hash)
+                self.local_db.update_file_timestamp(file_info["file_id"], os.stat(event.src_path).st_mtime)
                 logging.info(f"Updated file with id: {file_info['file_id']}, new hash: {new_hash}")
         except FileNotFoundError:
             pass

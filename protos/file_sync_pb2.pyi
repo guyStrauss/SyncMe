@@ -64,14 +64,16 @@ class FilePart(_message.Message):
     def __init__(self, data: _Optional[bytes] = ..., size: _Optional[int] = ..., offset: _Optional[int] = ...) -> None: ...
 
 class FileSyncRequest(_message.Message):
-    __slots__ = ["user_id", "file_id", "parts"]
+    __slots__ = ["user_id", "file_id", "parts", "last_modified"]
     USER_ID_FIELD_NUMBER: _ClassVar[int]
     FILE_ID_FIELD_NUMBER: _ClassVar[int]
     PARTS_FIELD_NUMBER: _ClassVar[int]
+    LAST_MODIFIED_FIELD_NUMBER: _ClassVar[int]
     user_id: str
     file_id: str
     parts: _containers.RepeatedCompositeFieldContainer[FilePart]
-    def __init__(self, user_id: _Optional[str] = ..., file_id: _Optional[str] = ..., parts: _Optional[_Iterable[_Union[FilePart, _Mapping]]] = ...) -> None: ...
+    last_modified: _timestamp_pb2.Timestamp
+    def __init__(self, user_id: _Optional[str] = ..., file_id: _Optional[str] = ..., parts: _Optional[_Iterable[_Union[FilePart, _Mapping]]] = ..., last_modified: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
 
 class Block(_message.Message):
     __slots__ = ["hash", "size", "offset"]

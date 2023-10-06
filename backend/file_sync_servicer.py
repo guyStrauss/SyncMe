@@ -63,7 +63,7 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         metadata = FileMetadata(hash=request.hash, user_id=request.user_id, path=request.name,
                                 last_modified=last_modified)
         inserted_id = self.metadata_db.insert_metadata(metadata)
-        file_hashes = self.storage_db.upload_file(request.user_id, inserted_id, request.data)
+        _, file_hashes = self.storage_db.upload_file(request.user_id, inserted_id, request.data)
         self.metadata_db.update_file_hashes(inserted_id, file_hashes)
         return wrappers.StringValue(value=inserted_id)
 
@@ -116,12 +116,12 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         if request.user_id != metadata.user_id:
             context.abort(grpc.StatusCode.PERMISSION_DENIED, "User id does not match the file id.")
         changes = [FileChange(offset=part.offset, size=part.size, data=part.data) for part in request.parts]
-        file_hashes = self.storage_db.sync_file(request.user_id, metadata.id, changes)
-        metadata.hash = self.storage_db.calculate_hash(request.user_id, metadata.id)
+        file_hash, file_hashes = self.storage_db.sync_file(request.user_id, metadata.id, changes)
+        metadata.hash = file_hash
         metadata.hash_list = file_hashes
+        metadata.last_modified = datetime.utcfromtimestamp(request.last_modified.seconds)
         self._logger.info(f"Updated file with id: {metadata.id}, new hash: {metadata.hash}")
-        self.metadata_db.update_metadata(request.file_id, metadata)
-        return wrappers.BoolValue(value=True)
+        return wrappers.BoolValue(value=self.metadata_db.update_metadata(request.file_id, metadata))
 
     def update_file_name(self, request, context):
         """

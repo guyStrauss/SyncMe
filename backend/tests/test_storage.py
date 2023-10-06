@@ -29,7 +29,7 @@ class TestStorage(StorageBaseTest):
 
     def test_get_file_hashes(self):
         file_data, file_hash = self._generate_random_file()
-        server_hashes = [block.hash for block in self.storage.upload_file(USER_ID, file_hash, file_data)]
+        server_hashes = [block.hash for block in self.storage.upload_file(USER_ID, file_hash, file_data)[-1]]
         hashes = []
         for i in range(0, len(file_data), BLOCK_SIZE):
             hashes.append(hashlib.sha256(file_data[i:i + BLOCK_SIZE]).hexdigest())

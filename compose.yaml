@@ -27,8 +27,6 @@ services:
       context: .
       dockerfile: ./backend/Dockerfile
       target: tests
-    ports:
-      - '50051:50051'
     depends_on:
       - mongodb
     environment:

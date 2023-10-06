@@ -118,7 +118,7 @@ class FilesystemDatabase(StorageDatabase):
                     return file.read(block)
             return zip_file.read(FILENAME)
 
-    def __write_file_to_disk(self, file_path: str, file: bytes) -> List[FilePartHash]:
+    def __write_file_to_disk(self, file_path: str, file: bytes) -> [str, List[FilePartHash]]:
         """
         Write the file to the disk, and calculate the hash of the file.
         :param file_path: The path of the file.
@@ -126,12 +126,14 @@ class FilesystemDatabase(StorageDatabase):
         """
         logging.debug(f"Writing file to disk: {file_path}")
         parts_hashes = []
+        file_hash = hashlib.sha256()
         for i in range(0, len(file), BLOCK_SIZE):
             part_data = file[i:i + BLOCK_SIZE]
+            file_hash.update(part_data)
             parts_hashes.append(FilePartHash(hash=hashlib.sha256(part_data).hexdigest(), offset=i, size=len(part_data)))
         with zipfile.ZipFile(file_path, 'w', self.zip_compress_level) as zip_file:
             zip_file.writestr(FILENAME, file)
-        return parts_hashes
+        return file_hash.hexdigest(), parts_hashes
 
     def __write_changes(self, user_id: str, file_id: str, changes: List[FileChange]):
         """
@@ -155,5 +157,4 @@ class FilesystemDatabase(StorageDatabase):
                 bytes_io.seek(change.offset + change.size)
                 bytes_io.truncate()
 
-        file_hashes = self.__write_file_to_disk(file_path, bytes_io.getvalue())
-        return file_hashes
+        return self.__write_file_to_disk(file_path, bytes_io.getvalue())

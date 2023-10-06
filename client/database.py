@@ -9,8 +9,9 @@ class ClientDatabase:
         db = tinydb.TinyDB('client_db.json')
         self.table = db.table('files')
 
-    def insert_file(self, file_id, file_name, file_hash):
-        self.table.insert({'file_id': file_id, 'file_name': file_name, 'file_hash': file_hash})
+    def insert_file(self, file_id, file_name, file_hash, file_timestamp):
+        self.table.insert(
+            {'file_id': file_id, 'file_name': file_name, 'file_hash': file_hash, 'file_timestamp': file_timestamp})
 
     def get_file(self, file_name):
         query = tinydb.Query()
@@ -28,3 +29,9 @@ class ClientDatabase:
 
     def update_file_name(self, file_old_name, file_new_name):
         self.table.update({'file_name': file_new_name}, tinydb.Query().file_name == file_old_name)
+
+    def update_file_timestamp(self, file_id, file_timestamp):
+        self.table.update({'file_timestamp': file_timestamp}, tinydb.Query().file_id == file_id)
+
+    def get_all_files(self):
+        return self.table.all()

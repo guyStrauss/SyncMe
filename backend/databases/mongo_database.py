@@ -13,7 +13,7 @@ from models.file_medadata import FileMetadata
 from models.file_part_hash import FilePartHash
 from models.inserted_file_metadata import InsertedFileMetadata
 
-HOST = "mongodb://mongodb:27017/syncme" if os.environ["MONGO_URI"] else "mongodb://localhost:27017"
+HOST = os.environ["MONGO_URI"] if "MONGO_URI" in os.environ else "mongodb://localhost:27017"
 
 logger = logging.getLogger(__name__)
 
