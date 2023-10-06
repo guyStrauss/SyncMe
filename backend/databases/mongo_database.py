@@ -2,6 +2,7 @@
 Specific implementation of the database interface for MongoDB.
 """
 import logging
+import os
 from typing import List
 
 from bson import ObjectId
@@ -12,8 +13,7 @@ from models.file_medadata import FileMetadata
 from models.file_part_hash import FilePartHash
 from models.inserted_file_metadata import InsertedFileMetadata
 
-PORT = 27017
-HOST = "localhost"
+HOST = "mongodb://mongodb:27017/syncme" if os.environ["MONGO_URI"] else "mongodb://localhost:27017"
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ class MongoDatabase(MetadataDatabase):
         """
         Initialize the database.
         """
-        self.__client = MongoClient(HOST, PORT)
+        self.__client = MongoClient(HOST)
         self.__db = self.__client[collection_name]
         self.__collection = self.__db[collection_name]
         logger.info("Database initialized.")

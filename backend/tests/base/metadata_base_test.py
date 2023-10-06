@@ -2,14 +2,14 @@ import unittest
 
 import pymongo
 
-from databases.mongo_database import MongoDatabase, PORT, HOST
+from databases.mongo_database import MongoDatabase, HOST
 from tests.constants import METADATA_DATABASE_NAME
 
 
 class MetadataBaseTest(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        client = pymongo.MongoClient(HOST, PORT)
+        client = pymongo.MongoClient(HOST)
         db = client[METADATA_DATABASE_NAME]
         self.collection = db[METADATA_DATABASE_NAME]
         self.server = MongoDatabase(METADATA_DATABASE_NAME)

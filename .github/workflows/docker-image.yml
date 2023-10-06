@@ -23,5 +23,6 @@ jobs:
         with:
           context: .
           file: ./backend/Dockerfile
+          target: prod
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/syncme:latest
