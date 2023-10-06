@@ -143,6 +143,7 @@ def serve():
     ])
     file_sync_pb2_grpc.add_FileSyncServicer_to_server(FileSyncServicer(), server)
     server.add_insecure_port('[::]:50051')
+    
     server.start()
     server.wait_for_termination()
 
