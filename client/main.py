@@ -14,6 +14,8 @@ def main():
     logging.basicConfig(level=logging.INFO)
     queue = Queue()
     event_handler = DirectoryHandler(queue, DIRECTORY)
+    dispatcher = RequestDispatcher(queue)
+    dispatcher.startup()
     threads = [threading.Thread(target=RequestDispatcher(queue).run), threading.Thread(target=event_handler.start)]
     for thread in threads:
         thread.start()

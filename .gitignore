@@ -9,6 +9,7 @@ __pycache__/
 # Distribution / packaging
 .Python
 backend/storage/*
+backend/tests/test-storage/*
 build/
 develop-eggs/
 dist/

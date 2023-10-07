@@ -3,6 +3,7 @@ import os
 import random
 import unittest
 
+from google.protobuf import wrappers_pb2 as wrappers
 from google.protobuf.timestamp_pb2 import Timestamp
 
 from databases.filesystem_database import BLOCK_SIZE
@@ -71,7 +72,7 @@ class ServicerTests(MetadataBaseTest, StorageBaseTest):
     def test_get_files(self):
         files = [self.__generate_random_file() for _ in range(10)]
         inserted_ids = [self.stub.upload_file(file, context=None).value for file in files]
-        response = self.stub.get_file_list(file_sync_pb2.FileRequest(user_id=USER_ID), context=None)
+        response = self.stub.get_file_list(wrappers.StringValue(value=USER_ID), context=None)
         self.assertEqual(len(response.files), len(files))
         for file in response.files:
             self.assertIn(file.file_id, inserted_ids)

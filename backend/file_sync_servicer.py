@@ -74,7 +74,8 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         self._logger.info("get_file_list called")
         metadata = self.metadata_db.get_all_metadata(request.value)
         return file_sync_pb2.FileList(
-            files=[file_sync_pb2.FileRequest(user_id=metadata.user_id, file_id=metadata.id)
+            files=[file_sync_pb2.getFileAnswer(user_id=metadata.user_id, file_id=metadata.id, hash=metadata.hash,
+                                               last_modified=Timestamp(seconds=int(metadata.last_modified.timestamp())))
                    for metadata in metadata])
 
     def delete_file(self, request, context):

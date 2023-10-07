@@ -1,6 +1,7 @@
 """
 This module is responsible for the communication between the client and the server.
 """
+import datetime
 import hashlib
 import logging
 import os
@@ -39,6 +40,7 @@ class RequestDispatcher:
             EventType.CREATED: self.file_created,
             EventType.DELETED: self.file_deleted,
             EventType.MODIFIED: self.file_modified,
+            EventType.DOWNLOAD: self.download_file,
             EventType.MOVED: self.file_moved,
             # EventType.ROUTINE_CHECK: self.routine_check
         }
@@ -48,7 +50,6 @@ class RequestDispatcher:
         This function runs the dispatcher.
         run in a separate thread.
         """
-        self.startup()
         while True:
             request = self.queue.get()  # type: Event
             print(f"Got request: {request}")
@@ -61,16 +62,25 @@ class RequestDispatcher:
         file_list = self.stub.get_file_list(wrappers.StringValue(value="1"))
         for file in file_list.files:
             # TODO finish this
-            print(file.file_id)
-            # file_metadata = self.stub.get_file_metadata(file_sync_pb2.FileRequest(user_id="1", file_id=file.file_id))
-            # if not self.local_db.get_file(file.name):
-            #     self.local_db.insert_file(file.file_id, file.name, file.hash,
-            #                               datetime.datetime.fromtimestamp(file.last_modified.seconds))
-            #     file_data = self.stub.get_file(file_sync_pb2.FileRequest(user_id="1", file_id=file.file_id)).data
-            #     with open(file.name, "wb") as file_descriptor:
-            #         file_descriptor.write(file_data)
-            #     self.local_db.update_file_timestamp(file.file_id, os.stat(file.name).st_mtime)
-            #     logging.info(f"Downloaded file with id: {file.file_id}")
+            if not self.local_db.get_file_by_id(file.file_id):
+                self.download_file(Event(
+                    type=EventType.DOWNLOAD,
+                    time=datetime.datetime.now(),
+                    src_path=file.file_id
+                ))
+
+    def download_file(self, event: Event):
+        """
+        Download the file from the server.
+        """
+        logging.info(f"Downloading file with id: {event.src_path}")
+        file = self.stub.get_file(file_sync_pb2.FileRequest(user_id="1", file_id=event.src_path))
+        with open(file.name, "wb") as file_writer:
+            file_writer.write(file.data)
+        # Change last modified time to the server's last modified time
+        timestamp = datetime.datetime.utcfromtimestamp(file.last_modified.seconds).timestamp()
+        os.utime(file.name, (timestamp, timestamp))
+        self.local_db.insert_file(event.src_path, file.name, file.hash, os.stat(file.name).st_mtime)
 
     def file_created(self, event: Event):
         """

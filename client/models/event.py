@@ -13,6 +13,7 @@ class EventType(enum.Enum):
     CREATED = "CREATED"
     DELETED = "DELETED"
     MODIFIED = "MODIFIED"
+    DOWNLOAD = "DOWNLOAD"
     MOVED = "MOVED"
     ROUTINE_CHECK = "ROUTINE_CHECK"
 

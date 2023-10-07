@@ -21,7 +21,7 @@ message UpdateFileName{
 }
 message FileList
 {
-  repeated FileRequest files = 1;
+  repeated getFileAnswer files = 1;
 }
 
 message FileRequest
@@ -66,4 +66,14 @@ message Block
   string hash = 1;
   int32 size = 2;
   int32 offset = 3;
+}
+
+message getFileAnswer
+{
+  string hash = 1;
+  string name = 2;
+  string file_id = 3;
+  string user_id = 4;
+  google.protobuf.Timestamp last_modified = 5;
+
 }

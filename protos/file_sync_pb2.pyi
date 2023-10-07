@@ -20,8 +20,8 @@ class UpdateFileName(_message.Message):
 class FileList(_message.Message):
     __slots__ = ["files"]
     FILES_FIELD_NUMBER: _ClassVar[int]
-    files: _containers.RepeatedCompositeFieldContainer[FileRequest]
-    def __init__(self, files: _Optional[_Iterable[_Union[FileRequest, _Mapping]]] = ...) -> None: ...
+    files: _containers.RepeatedCompositeFieldContainer[getFileAnswer]
+    def __init__(self, files: _Optional[_Iterable[_Union[getFileAnswer, _Mapping]]] = ...) -> None: ...
 
 class FileRequest(_message.Message):
     __slots__ = ["user_id", "file_id"]
@@ -84,3 +84,17 @@ class Block(_message.Message):
     size: int
     offset: int
     def __init__(self, hash: _Optional[str] = ..., size: _Optional[int] = ..., offset: _Optional[int] = ...) -> None: ...
+
+class getFileAnswer(_message.Message):
+    __slots__ = ["hash", "name", "file_id", "user_id", "last_modified"]
+    HASH_FIELD_NUMBER: _ClassVar[int]
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    FILE_ID_FIELD_NUMBER: _ClassVar[int]
+    USER_ID_FIELD_NUMBER: _ClassVar[int]
+    LAST_MODIFIED_FIELD_NUMBER: _ClassVar[int]
+    hash: str
+    name: str
+    file_id: str
+    user_id: str
+    last_modified: _timestamp_pb2.Timestamp
+    def __init__(self, hash: _Optional[str] = ..., name: _Optional[str] = ..., file_id: _Optional[str] = ..., user_id: _Optional[str] = ..., last_modified: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
