@@ -24,7 +24,7 @@ class RequestDispatcher:
     Uses queue to get requests from the client.
     """
 
-    def __init__(self, queue: Queue):
+    def __init__(self, queue: Queue[Event]):
         """
         :param queue: The queue to get requests from.
         """
@@ -36,7 +36,6 @@ class RequestDispatcher:
         self.stub = file_sync_pb2_grpc.FileSyncStub(channel)
         self.local_db = ClientDatabase()
         self.handlers = {
-            EventType.ON_STARTUP: self.startup,
             EventType.CREATED: self.file_created,
             EventType.DELETED: self.file_deleted,
             EventType.MODIFIED: self.file_modified,
@@ -61,13 +60,26 @@ class RequestDispatcher:
         """
         file_list = self.stub.get_file_list(wrappers.StringValue(value="1"))
         for file in file_list.files:
-            # TODO finish this
             if not self.local_db.get_file_by_id(file.file_id):
                 self.download_file(Event(
                     type=EventType.DOWNLOAD,
                     time=datetime.datetime.now(),
                     src_path=file.file_id
                 ))
+            else:
+                if os.stat(file.name).st_mtime > self.local_db.get_file(file.name)['file_timestamp']:
+                    self.queue.put(Event(
+                        type=EventType.MODIFIED,
+                        time=datetime.datetime.now(),
+                        src_path=file.name
+                    ))
+                elif os.stat(file.name).st_mtime < self.local_db.get_file(file.name)['file_timestamp']:
+                    # TODO finish this
+                    pass
+
+    def sync_file_from_server(self, file_id: str):
+        # TODO finish
+        pass
 
     def download_file(self, event: Event):
         """
