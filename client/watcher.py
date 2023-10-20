@@ -13,7 +13,7 @@ from client.models.event import Event, EventType
 
 class DirectoryHandler:
 
-    def __init__(self, queue: Queue, directory: str, recursive: bool = True, timeout: int = 1):
+    def __init__(self, queue: Queue, directory: str, timeout: int = 1):
         self.queue = queue
         self.directory = directory
         self.timeout = timeout

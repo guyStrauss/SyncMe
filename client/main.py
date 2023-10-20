@@ -19,7 +19,6 @@ def main():
     threads = [threading.Thread(target=RequestDispatcher(queue).run), threading.Thread(target=event_handler.start)]
     for thread in threads:
         thread.start()
-    for thread in threads:
         thread.join()
 
 
