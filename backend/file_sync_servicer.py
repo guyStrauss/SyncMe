@@ -136,6 +136,23 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         self.metadata_db.update_metadata(request.file_id, metadata)
         return wrappers.BoolValue(value=True)
 
+    def sync_file_server(self, request, context):
+        """
+        Sync the file to the user, from the server.
+        """
+        self._logger.info("sync_file called")
+        metadata = self.metadata_db.get_metadata(request.file_id)
+        if request.user_id != metadata.user_id:
+            context.abort(grpc.StatusCode.PERMISSION_DENIED, "User id does not match the file id.")
+        requested_file_parts = []
+        for part in request.parts:
+            data = self.storage_db.get_file(request.user_id, metadata.id, part.offset, part.size)
+            requested_file_parts.append(file_sync_pb2.FilePart(offset=part.offset, size=part.size, data=data))
+        timestamp = Timestamp()
+        timestamp.FromDatetime(metadata.last_modified)
+        return file_sync_pb2.FileSyncRequest(file_id=metadata.id, user_id=metadata.user_id, parts=requested_file_parts,
+                                             last_modified=timestamp)
+
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10), options=[

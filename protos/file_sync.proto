@@ -13,11 +13,19 @@ service FileSync
   rpc get_file_hashes (FileRequest) returns (stream Block) {}
   rpc get_file_list (google.protobuf.StringValue) returns (FileList) {}
   rpc update_file_name(UpdateFileName) returns (google.protobuf.BoolValue) {}
+  rpc sync_file_server (SyncFileServerRequest) returns (FileSyncRequest) {}
 }
 message UpdateFileName{
   string user_id = 1;
   string file_id = 2;
   string new_name = 3;
+}
+
+message SyncFileServerRequest
+{
+  string user_id = 1;
+  repeated FilePart parts = 2;
+  google.protobuf.Timestamp last_modified = 3;
 }
 message FileList
 {
