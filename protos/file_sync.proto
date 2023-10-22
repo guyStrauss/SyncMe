@@ -24,8 +24,9 @@ message UpdateFileName{
 message SyncFileServerRequest
 {
   string user_id = 1;
-  repeated FilePart parts = 2;
-  google.protobuf.Timestamp last_modified = 3;
+  string file_id = 2;
+  repeated FilePart parts = 3;
+  google.protobuf.Timestamp last_modified = 4;
 }
 message FileList
 {

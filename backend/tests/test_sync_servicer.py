@@ -142,6 +142,19 @@ class ServicerTests(MetadataBaseTest, StorageBaseTest):
                                            context=None)
         self.assertEqual(new_name, new_file_info.name)
 
+    def test_sync_file_server(self):
+        file = self.__generate_random_file()
+        inserted_id = self.stub.upload_file(file, context=None).value
+        parts_to_request = [file_sync_pb2.FilePart(offset=i, size=1024) for i in
+                            range(10, len(file.data), 1024)]
+        response = self.stub.sync_file_server(
+            file_sync_pb2.SyncFileServerRequest(file_id=inserted_id, user_id=USER_ID, parts=parts_to_request),
+            context=None)
+        self.assertEqual(len(response.parts), len(parts_to_request))
+        for i in range(len(response.parts)):
+            self.assertEqual(response.parts[i].data, file.data[parts_to_request[i].offset:parts_to_request[i].offset +
+                                                                                          parts_to_request[i].size])
+
     def __generate_random_file(self, size: int = 5 * MEGA_BYTE) -> [bytes, str]:
         file_data, file_hash = super()._generate_random_file(size)
         file_name = str(random.randrange(0, 1000000))
