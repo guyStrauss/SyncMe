@@ -6,6 +6,7 @@ import hashlib
 import logging
 import os
 import time
+from itertools import zip_longest
 from queue import Queue
 
 import grpc
@@ -15,6 +16,7 @@ from google.protobuf.timestamp_pb2 import Timestamp
 from client.database import ClientDatabase
 from client.models.event import EventType, Event
 from databases.filesystem_database import BLOCK_SIZE
+from file_sync_pb2 import FilePart
 from protos import file_sync_pb2_grpc, file_sync_pb2
 
 
@@ -77,8 +79,36 @@ class RequestDispatcher:
                     self.sync_file_from_server(file.file_id)
 
     def sync_file_from_server(self, event: Event):
-        # TODO finish
-        pass
+        """
+        Sync the file from the server. (download the file)
+        """
+        # calc the diff between the server and the client
+        local_file_parts = []
+        with open(event.src_path, "rb") as file:
+            for i, block in zip_longest(range(0, os.stat(event.src_path).st_size, BLOCK_SIZE),
+                                        self.stub.get_file_hashes(
+                                            file_sync_pb2.FileRequest(user_id="1", file_id=event.src_path)),
+                                        fillvalue=""):
+                file.seek(i)
+                file_part_content = file.read(BLOCK_SIZE)
+                part_hash = hashlib.sha256(file_part_content).hexdigest()
+                if part_hash != block.hash:
+                    local_file_parts.append(FilePart(offset=i, size=len(file_part_content), data=b""))
+        # download the diff
+        file = self.stub.sync_file_server(
+            file_sync_pb2.SyncFileServerRequest(user_id="1", file_id=event.src_path, parts=local_file_parts))
+        with open(event.src_path, "ab") as file_writer:
+            for part in file.parts:
+                file_writer.seek(part.offset)
+                file_writer.write(part.data)
+        # Change last modified time to the server's last modified time
+        timestamp = datetime.datetime.utcfromtimestamp(file.last_modified.seconds).timestamp()
+        os.utime(event.src_path, (timestamp, timestamp))
+        self.local_db.update_file_timestamp(event.src_path, os.stat(event.src_path).st_mtime)
+        # Update the hash of the file
+        with open(event.src_path, "rb") as file:
+            new_hash = hashlib.sha256(file.read()).hexdigest()
+        self.local_db.update_file_hash(event.src_path, new_hash)
 
     def download_file(self, event: Event):
         """
