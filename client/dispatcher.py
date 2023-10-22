@@ -41,7 +41,7 @@ class RequestDispatcher:
             EventType.MODIFIED: self.file_modified,
             EventType.DOWNLOAD: self.download_file,
             EventType.MOVED: self.file_moved,
-            # EventType.ROUTINE_CHECK: self.routine_check
+            EventType.SERVER_SYNC: self.sync_file_from_server,
         }
 
     def run(self):
@@ -74,10 +74,9 @@ class RequestDispatcher:
                         src_path=file.name
                     ))
                 elif os.stat(file.name).st_mtime < self.local_db.get_file(file.name)['file_timestamp']:
-                    # TODO finish this
-                    pass
+                    self.sync_file_from_server(file.file_id)
 
-    def sync_file_from_server(self, file_id: str):
+    def sync_file_from_server(self, event: Event):
         # TODO finish
         pass
 

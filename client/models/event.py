@@ -15,7 +15,7 @@ class EventType(enum.Enum):
     MODIFIED = "MODIFIED"
     DOWNLOAD = "DOWNLOAD"
     MOVED = "MOVED"
-    ROUTINE_CHECK = "ROUTINE_CHECK"
+    SERVER_SYNC = "SERVER_SYNC"
 
 
 class Event(BaseModel):

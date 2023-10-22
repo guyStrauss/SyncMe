@@ -48,13 +48,21 @@ class DirectoryHandler:
                             src_path=file_path
                         ))
                     else:
-                        if os.stat(file_path).st_mtime != self.local_db.get_file(file_path)['file_timestamp']:
+                        if os.stat(file_path).st_mtime > self.local_db.get_file(file_path)['file_timestamp']:
                             self.logger.info(f"Modified file: {file_path}")
                             self.queue.put(Event(
                                 type=EventType.MODIFIED,
                                 time=datetime.datetime.now(),
                                 src_path=file_path
                             ))
+                        elif os.stat(file_path).st_mtime <= self.local_db.get_file(file_path)['file_timestamp']:
+                            self.logger.info(f"Server sync file: {file_path}")
+                            self.queue.put(Event(
+                                type=EventType.SERVER_SYNC,
+                                time=datetime.datetime.now(),
+                                src_path=file_path
+                            ))
+
                     # Checking what file got deleted
                     for file in self.local_db.get_all_files():
                         if not os.path.exists(file['file_name']):
