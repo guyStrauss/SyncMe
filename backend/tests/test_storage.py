@@ -6,6 +6,7 @@ import zipfile
 
 from databases.filesystem_database import FILENAME, BLOCK_SIZE
 from models.file_change import FileChange
+from models.file_part_hash import FilePartHash
 from tests.base.storage_base_test import StorageBaseTest
 from tests.constants import USER_ID, MEGA_BYTE
 
@@ -25,7 +26,8 @@ class TestStorage(StorageBaseTest):
     def test_get_file_offset(self):
         file_data, file_hash = self._generate_random_file()
         self.storage.upload_file(USER_ID, file_hash, file_data)
-        self.assertEqual(self.storage.get_file(USER_ID, file_hash, 100, 100), file_data[100:200])
+        self.assertEqual(self.storage.get_file(USER_ID, file_hash, [FilePartHash(offset=100, size=100, hash=None)]),
+                         [file_data[100:200]])
 
     def test_get_file_hashes(self):
         file_data, file_hash = self._generate_random_file()
@@ -57,6 +59,5 @@ class TestStorage(StorageBaseTest):
         self.storage.sync_file(USER_ID, file_id, file_changes)
         self.assertEqual(self.storage.get_file(USER_ID, file_id), file_data)
 
-
-if __name__ == '__main__':
-    unittest.main()
+    if __name__ == '__main__':
+        unittest.main()

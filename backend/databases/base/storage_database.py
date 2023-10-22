@@ -7,13 +7,11 @@ from models.file_change import FileChange
 
 
 class StorageDatabase(object):
-    def get_file(
-            self, user_id: str, file_id: str, file_offset: int, block_size: int
-    ) -> bytes:
+    def get_file(self, user_id: str, file_id: str, file_parts: int) -> bytes:
         """
         Get the file from the storage.
         :param user_id: id of the user.
-        :param file_offset: The offset of the file.
+        :param file_parts: The offset of the file.
         :param block_size: The size of the block. For the offset
         :param file_id: The hash of the file.
         :return: The file.

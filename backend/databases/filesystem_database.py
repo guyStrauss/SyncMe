@@ -29,18 +29,18 @@ class FilesystemDatabase(StorageDatabase):
         if not os.path.exists(root_path):
             os.makedirs(root_path)
 
-    def get_file(self, user_id: str, file_id: str, file_offset: int = None, block_size: int = None) -> bytes:
+    def get_file(self, user_id: str, file_id: str, file_parts: FilePartHash = None) -> bytes:
         """
         Get the file from the storage.
         :param user_id: id of the user.
-        :param file_offset: The offset of the file.
+        :param file_parts: The offset of the file.
         :param block_size: The size of the block. For the offset
         :param file_id: The hash of the file.
         :return: The file.
         :rtype: bytes
         """
         file_path = self.__get_file_path(user_id, file_id)
-        return self.__read_file_from_disk(file_path, file_offset, block_size)
+        return self.__read_file_from_disk(file_path, file_parts)
 
     def upload_file(self, user_id: str, file_id: str, file: bytes) -> List[FilePartHash]:
         """
@@ -103,7 +103,7 @@ class FilesystemDatabase(StorageDatabase):
         """
         return os.path.join(self.root_path, user_id, file_id + FILE_EXTENSION)
 
-    def __read_file_from_disk(self, file_path: str, offset: int = None, block: int = None) -> bytes:
+    def __read_file_from_disk(self, file_path: str, file_parts) -> bytes | List[bytes]:
         """
         Read the file from the disk.
         :param file_path: The path of the file.
@@ -112,10 +112,13 @@ class FilesystemDatabase(StorageDatabase):
         """
         logging.debug(f"Reading file from disk: {file_path}")
         with zipfile.ZipFile(file_path, 'r', self.zip_compress_level) as zip_file:
-            if offset is not None and block is not None:
+            if file_parts is not None:
                 with zip_file.open(FILENAME) as file:
-                    file.seek(offset)
-                    return file.read(block)
+                    data = []
+                    for part in file_parts:
+                        file.seek(part.offset)
+                        data.append(file.read(part.size))
+                    return data
             return zip_file.read(FILENAME)
 
     def __write_file_to_disk(self, file_path: str, file: bytes) -> [str, List[FilePartHash]]:

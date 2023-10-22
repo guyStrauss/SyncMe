@@ -145,8 +145,8 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         if request.user_id != metadata.user_id:
             context.abort(grpc.StatusCode.PERMISSION_DENIED, "User id does not match the file id.")
         requested_file_parts = []
-        for part in request.parts:
-            data = self.storage_db.get_file(request.user_id, metadata.id, part.offset, part.size)
+        file_parts = self.storage_db.get_file(request.user_id, metadata.id, request.parts)
+        for part, data in zip(request.parts, file_parts):
             requested_file_parts.append(file_sync_pb2.FilePart(offset=part.offset, size=part.size, data=data))
         timestamp = Timestamp()
         timestamp.FromDatetime(metadata.last_modified)
