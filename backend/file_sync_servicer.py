@@ -47,14 +47,14 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         metadata = self.metadata_db.get_metadata(request.file_id)
         return wrappers.BoolValue(value=metadata.hash == request.hash if metadata else False)
 
-    def does_file_exist(self, request: file_sync_pb2.FileRequest, context):
+    def does_file_exist(self, request: file_sync_pb2.FileRequest, context) -> wrappers.BoolValue:
         """
         Check if the file exists.
         """
         metadata = self.metadata_db.get_metadata(request.file_id)
         return wrappers.BoolValue(value=metadata is not None)
 
-    def upload_file(self, request, context):
+    def upload_file(self, request, context) -> wrappers.StringValue:
         """
         Upload the file to the storage.
         """
@@ -67,7 +67,7 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         self.metadata_db.update_file_hashes(inserted_id, file_hashes)
         return wrappers.StringValue(value=inserted_id)
 
-    def get_file_list(self, request, context):
+    def get_file_list(self, request, context) -> file_sync_pb2.FileList:
         """
         Get the list of files for the user.
         """
@@ -78,7 +78,7 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
                                                last_modified=Timestamp(seconds=int(metadata.last_modified.timestamp())))
                    for metadata in metadata])
 
-    def delete_file(self, request, context):
+    def delete_file(self, request, context) -> wrappers.BoolValue:
         """
         Delete the file from the storage.
         """
@@ -96,7 +96,7 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
             return wrappers.BoolValue(value=False)
         return wrappers.BoolValue(value=True)
 
-    def get_file_hashes(self, request, context):
+    def get_file_hashes(self, request, context) -> file_sync_pb2.Block:
         """
         Get the list of hashes for the user. Used for syncing. and user determines block size
         """
@@ -108,7 +108,7 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         for part_file_hash in file_hashes:
             yield file_sync_pb2.Block(hash=part_file_hash.hash, offset=part_file_hash.offset, size=part_file_hash.size)
 
-    def sync_file(self, request, context):
+    def sync_file(self, request, context) -> wrappers.BoolValue:
         """
         Sync the file to the storage.
         """
@@ -124,7 +124,7 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         self._logger.info(f"Updated file with id: {metadata.id}, new hash: {metadata.hash}")
         return wrappers.BoolValue(value=self.metadata_db.update_metadata(request.file_id, metadata))
 
-    def update_file_name(self, request, context):
+    def update_file_name(self, request, context) -> wrappers.BoolValue:
         """
         Update the file name in the database.
         """

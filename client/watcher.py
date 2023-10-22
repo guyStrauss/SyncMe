@@ -2,6 +2,7 @@
 This module is responsible for watching the files in the directory.
 """
 import datetime
+import hashlib
 import logging
 import os
 import time
@@ -28,6 +29,18 @@ class DirectoryHandler:
                 for file in files:
                     file_path = os.path.join(root, file)
                     if not self.local_db.get_file(file_path):
+                        with open(file_path, 'rb') as f:
+                            file_hash = hashlib.sha256(f.read()).hexdigest()
+                            if self.local_db.get_file_by_hash(file_hash):
+                                self.logger.info(f"File renamed exists: {file_path}")
+                                self.queue.put(Event(
+                                    type=EventType.MOVED,
+                                    time=datetime.datetime.now(),
+                                    src_path=self.local_db.get_file_by_hash(file_hash)['file_name'],
+                                    dest_path=file_path
+                                ))
+                                continue
+
                         self.logger.info(f"New file: {file_path}")
                         self.queue.put(Event(
                             type=EventType.CREATED,
@@ -51,4 +64,3 @@ class DirectoryHandler:
                                 time=datetime.datetime.now(),
                                 src_path=file['file_name']
                             ))
-                    # Checking if file was renamed

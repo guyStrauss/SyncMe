@@ -35,3 +35,6 @@ class ClientDatabase:
 
     def get_all_files(self):
         return self.table.all()
+
+    def get_file_by_hash(self, file_hash):
+        return self.table.get(tinydb.Query().file_hash == file_hash)
