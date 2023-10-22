@@ -17,6 +17,22 @@ class UpdateFileName(_message.Message):
     new_name: str
     def __init__(self, user_id: _Optional[str] = ..., file_id: _Optional[str] = ..., new_name: _Optional[str] = ...) -> None: ...
 
+class FileMetadata(_message.Message):
+    __slots__ = ["hash", "name", "file_id", "user_id", "last_modified", "version"]
+    HASH_FIELD_NUMBER: _ClassVar[int]
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    FILE_ID_FIELD_NUMBER: _ClassVar[int]
+    USER_ID_FIELD_NUMBER: _ClassVar[int]
+    LAST_MODIFIED_FIELD_NUMBER: _ClassVar[int]
+    VERSION_FIELD_NUMBER: _ClassVar[int]
+    hash: str
+    name: str
+    file_id: str
+    user_id: str
+    last_modified: _timestamp_pb2.Timestamp
+    version: int
+    def __init__(self, hash: _Optional[str] = ..., name: _Optional[str] = ..., file_id: _Optional[str] = ..., user_id: _Optional[str] = ..., last_modified: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., version: _Optional[int] = ...) -> None: ...
+
 class SyncFileServerRequest(_message.Message):
     __slots__ = ["user_id", "file_id", "parts"]
     USER_ID_FIELD_NUMBER: _ClassVar[int]
@@ -50,18 +66,20 @@ class CompareHash(_message.Message):
     def __init__(self, file_id: _Optional[str] = ..., hash: _Optional[str] = ...) -> None: ...
 
 class File(_message.Message):
-    __slots__ = ["user_id", "hash", "name", "data", "last_modified"]
+    __slots__ = ["user_id", "hash", "name", "data", "last_modified", "version"]
     USER_ID_FIELD_NUMBER: _ClassVar[int]
     HASH_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     DATA_FIELD_NUMBER: _ClassVar[int]
     LAST_MODIFIED_FIELD_NUMBER: _ClassVar[int]
+    VERSION_FIELD_NUMBER: _ClassVar[int]
     user_id: str
     hash: str
     name: str
     data: bytes
     last_modified: _timestamp_pb2.Timestamp
-    def __init__(self, user_id: _Optional[str] = ..., hash: _Optional[str] = ..., name: _Optional[str] = ..., data: _Optional[bytes] = ..., last_modified: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
+    version: int
+    def __init__(self, user_id: _Optional[str] = ..., hash: _Optional[str] = ..., name: _Optional[str] = ..., data: _Optional[bytes] = ..., last_modified: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., version: _Optional[int] = ...) -> None: ...
 
 class FilePart(_message.Message):
     __slots__ = ["data", "size", "offset"]
@@ -96,15 +114,17 @@ class Block(_message.Message):
     def __init__(self, hash: _Optional[str] = ..., size: _Optional[int] = ..., offset: _Optional[int] = ...) -> None: ...
 
 class getFileAnswer(_message.Message):
-    __slots__ = ["hash", "name", "file_id", "user_id", "last_modified"]
+    __slots__ = ["hash", "name", "file_id", "user_id", "last_modified", "version"]
     HASH_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     FILE_ID_FIELD_NUMBER: _ClassVar[int]
     USER_ID_FIELD_NUMBER: _ClassVar[int]
     LAST_MODIFIED_FIELD_NUMBER: _ClassVar[int]
+    VERSION_FIELD_NUMBER: _ClassVar[int]
     hash: str
     name: str
     file_id: str
     user_id: str
     last_modified: _timestamp_pb2.Timestamp
-    def __init__(self, hash: _Optional[str] = ..., name: _Optional[str] = ..., file_id: _Optional[str] = ..., user_id: _Optional[str] = ..., last_modified: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
+    version: int
+    def __init__(self, hash: _Optional[str] = ..., name: _Optional[str] = ..., file_id: _Optional[str] = ..., user_id: _Optional[str] = ..., last_modified: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., version: _Optional[int] = ...) -> None: ...

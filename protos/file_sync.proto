@@ -14,11 +14,22 @@ service FileSync
   rpc get_file_list (google.protobuf.StringValue) returns (FileList) {}
   rpc update_file_name(UpdateFileName) returns (google.protobuf.BoolValue) {}
   rpc sync_file_server (SyncFileServerRequest) returns (FileSyncRequest) {}
+  rpc get_file_metadata (FileRequest) returns (FileMetadata) {}
 }
 message UpdateFileName{
   string user_id = 1;
   string file_id = 2;
   string new_name = 3;
+}
+
+message FileMetadata
+{
+  string hash = 1;
+  string name = 2;
+  string file_id = 3;
+  string user_id = 4;
+  google.protobuf.Timestamp last_modified = 5;
+  int32 version = 6;
 }
 
 message SyncFileServerRequest
@@ -52,6 +63,7 @@ message File
   string name = 3;
   bytes data = 4;
   google.protobuf.Timestamp last_modified = 5;
+  int32 version = 6;
 }
 
 message FilePart
@@ -83,5 +95,6 @@ message getFileAnswer
   string file_id = 3;
   string user_id = 4;
   google.protobuf.Timestamp last_modified = 5;
+  int32 version = 6;
 
 }

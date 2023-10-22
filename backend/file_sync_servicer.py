@@ -37,7 +37,7 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         timestamp.FromDatetime(metadata.last_modified)
         return file_sync_pb2.File(name=metadata.path, data=file, hash=metadata.hash,
                                   last_modified=timestamp,
-                                  user_id=metadata.user_id)
+                                  user_id=metadata.user_id, version=metadata.version)
 
     def check_version(self, request: file_sync_pb2.CompareHash, context):
         """
@@ -59,7 +59,7 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         Upload the file to the storage.
         """
         self._logger.info("upload_file called with hash: %s", request.hash)
-        last_modified = datetime.utcfromtimestamp(request.last_modified.seconds)
+        last_modified = datetime.fromtimestamp(request.last_modified.seconds)
         metadata = FileMetadata(hash=request.hash, user_id=request.user_id, path=request.name,
                                 last_modified=last_modified)
         inserted_id = self.metadata_db.insert_metadata(metadata)
@@ -75,7 +75,8 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         metadata = self.metadata_db.get_all_metadata(request.value)
         return file_sync_pb2.FileList(
             files=[file_sync_pb2.getFileAnswer(user_id=metadata.user_id, file_id=metadata.id, hash=metadata.hash,
-                                               last_modified=Timestamp(seconds=int(metadata.last_modified.timestamp())))
+                                               last_modified=Timestamp(seconds=int(metadata.last_modified.timestamp())),
+                                               version=metadata.version)
                    for metadata in metadata])
 
     def delete_file(self, request, context) -> wrappers.BoolValue:
@@ -120,7 +121,8 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         file_hash, file_hashes = self.storage_db.sync_file(request.user_id, metadata.id, changes)
         metadata.hash = file_hash
         metadata.hash_list = file_hashes
-        metadata.last_modified = datetime.utcfromtimestamp(request.last_modified.seconds)
+        metadata.last_modified = datetime.fromtimestamp(request.last_modified.seconds)
+        metadata.version += 1
         self._logger.info(f"Updated file with id: {metadata.id}, new hash: {metadata.hash}")
         return wrappers.BoolValue(value=self.metadata_db.update_metadata(request.file_id, metadata))
 
@@ -133,6 +135,7 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         if request.user_id != metadata.user_id:
             context.abort(grpc.StatusCode.PERMISSION_DENIED, "User id does not match the file id.")
         metadata.path = request.new_name
+        metadata.version += 1
         self.metadata_db.update_metadata(request.file_id, metadata)
         return wrappers.BoolValue(value=True)
 
@@ -152,6 +155,19 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         timestamp.FromDatetime(metadata.last_modified)
         return file_sync_pb2.FileSyncRequest(file_id=metadata.id, user_id=metadata.user_id, parts=requested_file_parts,
                                              last_modified=timestamp)
+
+    def get_file_metadata(self, request, context):
+        """
+        Get the file metadata from the server.
+        """
+        self._logger.info("get_file_metadata called")
+        metadata = self.metadata_db.get_metadata(request.file_id)
+        if request.user_id != metadata.user_id:
+            context.abort(grpc.StatusCode.PERMISSION_DENIED, "User id does not match the file id.")
+        timestamp = Timestamp()
+        timestamp.FromDatetime(metadata.last_modified)
+        return file_sync_pb2.FileMetadata(file_id=metadata.id, user_id=metadata.user_id, hash=metadata.hash,
+                                          last_modified=timestamp, name=metadata.path, version=metadata.version)
 
 
 def serve():

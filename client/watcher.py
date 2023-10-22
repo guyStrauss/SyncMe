@@ -8,8 +8,12 @@ import os
 import time
 from queue import Queue
 
-from client.database import ClientDatabase
-from client.models.event import Event, EventType
+import grpc
+
+from database import ClientDatabase
+from models.event import Event, EventType
+from protos import file_sync_pb2
+from protos import file_sync_pb2_grpc
 
 
 class DirectoryHandler:
@@ -19,7 +23,11 @@ class DirectoryHandler:
         self.directory = directory
         self.timeout = timeout
         self.local_db = ClientDatabase()
-        # TODO add the files we already uploaded to the cache
+        options = [
+            ('grpc.max_send_message_length', 1024 * 1024 * 1024),
+            ('grpc.max_receive_message_length', 1024 * 1024 * 1024)]
+        channel = grpc.insecure_channel('localhost:50051', options=options)
+        self.stub = file_sync_pb2_grpc.FileSyncStub(channel)
         self.logger = logging.getLogger(__name__)
 
     def start(self):
@@ -36,7 +44,7 @@ class DirectoryHandler:
                                 self.queue.put(Event(
                                     type=EventType.MOVED,
                                     time=datetime.datetime.now(),
-                                    src_path=self.local_db.get_file_by_hash(file_hash)['file_name'],
+                                    src_path=self.local_db.get_file_by_hash(file_hash)['name'],
                                     dest_path=file_path
                                 ))
                                 continue
@@ -48,27 +56,32 @@ class DirectoryHandler:
                             src_path=file_path
                         ))
                     else:
-                        if os.stat(file_path).st_mtime > self.local_db.get_file(file_path)['file_timestamp']:
+                        if os.stat(file_path).st_mtime > self.local_db.get_file(file_path)['timestamp']:
                             self.logger.info(f"Modified file: {file_path}")
                             self.queue.put(Event(
                                 type=EventType.MODIFIED,
                                 time=datetime.datetime.now(),
                                 src_path=file_path
                             ))
-                        elif os.stat(file_path).st_mtime <= self.local_db.get_file(file_path)['file_timestamp']:
-                            self.logger.info(f"Server sync file: {file_path}")
-                            self.queue.put(Event(
-                                type=EventType.SERVER_SYNC,
-                                time=datetime.datetime.now(),
-                                src_path=file_path
-                            ))
+                        else:
+                            file_id = self.local_db.get_file(file_path)['id']
+                            version = self.local_db.get_file_version(file_id)
+                            if version < self.stub.get_file_metadata(
+                                    file_sync_pb2.FileRequest(file_id=file_id, user_id="1")).version:
+                                self.logger.info(f"Server sync file: {file_path}")
+                                self.queue.put(Event(
+                                    type=EventType.SERVER_SYNC,
+                                    time=datetime.datetime.now(),
+                                    src_path=file_path
+                                ))
 
                     # Checking what file got deleted
                     for file in self.local_db.get_all_files():
-                        if not os.path.exists(file['file_name']):
-                            self.logger.info(f"Deleted file: {file['file_name']}")
+                        filename = file['name']
+                        if not os.path.exists(filename):
+                            self.logger.info(f"Deleted file: {filename}")
                             self.queue.put(Event(
                                 type=EventType.DELETED,
                                 time=datetime.datetime.now(),
-                                src_path=file['file_name']
+                                src_path=filename
                             ))

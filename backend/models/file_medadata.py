@@ -11,3 +11,4 @@ class FileMetadata(BaseModel):
     user_id: str
     path: str
     last_modified: datetime
+    version: int = 0
