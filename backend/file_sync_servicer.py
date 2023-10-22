@@ -59,7 +59,7 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         Upload the file to the storage.
         """
         self._logger.info("upload_file called with hash: %s", request.hash)
-        last_modified = datetime.fromtimestamp(request.last_modified.seconds)
+        last_modified = datetime.utcfromtimestamp(request.last_modified.seconds)
         metadata = FileMetadata(hash=request.hash, user_id=request.user_id, path=request.name,
                                 last_modified=last_modified)
         inserted_id = self.metadata_db.insert_metadata(metadata)
@@ -121,7 +121,7 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         file_hash, file_hashes = self.storage_db.sync_file(request.user_id, metadata.id, changes)
         metadata.hash = file_hash
         metadata.hash_list = file_hashes
-        metadata.last_modified = datetime.fromtimestamp(request.last_modified.seconds)
+        metadata.last_modified = datetime.utcfromtimestamp(request.last_modified.seconds)
         metadata.version += 1
         self._logger.info(f"Updated file with id: {metadata.id}, new hash: {metadata.hash}")
         return wrappers.BoolValue(value=self.metadata_db.update_metadata(request.file_id, metadata))
@@ -162,6 +162,8 @@ class FileSyncServicer(file_sync_pb2_grpc.FileSyncServicer):
         """
         self._logger.info("get_file_metadata called")
         metadata = self.metadata_db.get_metadata(request.file_id)
+        if not metadata:
+            context.abort(grpc.StatusCode.NOT_FOUND, "File not found.")
         if request.user_id != metadata.user_id:
             context.abort(grpc.StatusCode.PERMISSION_DENIED, "User id does not match the file id.")
         timestamp = Timestamp()

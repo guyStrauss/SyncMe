@@ -113,12 +113,12 @@ class RequestDispatcher:
                 file_writer.write(part.data)
         # Change last modified time to the server's last modified time
         timestamp = datetime.datetime.fromtimestamp(file.last_modified.seconds).timestamp()
-        os.utime(event.src_path, (timestamp, timestamp))
         self.local_db.update_file_timestamp(event.src_path, timestamp)
         self.local_db.increment_file_version(file_id)
         # Update the hash of the file
         with open(event.src_path, "rb") as file:
             new_hash = hashlib.sha256(file.read()).hexdigest()
+        os.utime(event.src_path, (timestamp, timestamp))
         self.local_db.update_file_hash(event.src_path, new_hash)
 
     def download_file(self, event: Event):
@@ -131,7 +131,7 @@ class RequestDispatcher:
         os.makedirs(os.path.dirname(file.name), exist_ok=True)
         with open(file.name, "wb") as file_writer:
             file_writer.write(file.data)
-        timestamp = datetime.datetime.utcfromtimestamp(file.last_modified.seconds).timestamp()
+        timestamp = datetime.datetime.fromtimestamp(file.last_modified.seconds).timestamp()
         os.utime(file.name, (timestamp, timestamp))
         self.local_db.insert_file(event.src_path, file.name, file.hash, timestamp, file.version)
 
@@ -152,7 +152,8 @@ class RequestDispatcher:
 
         file_hash = hashlib.sha256(file_data).hexdigest()
         timestamp = Timestamp()
-        timestamp.FromSeconds(int(os.stat(event.src_path).st_mtime))
+        date_time = datetime.datetime.fromtimestamp(os.stat(event.src_path).st_mtime)
+        timestamp.FromSeconds(int(date_time.timestamp()))
         file = file_sync_pb2.File(name=event.src_path, data=file_data, user_id="1", last_modified=timestamp,
                                   hash=file_hash)
         file_id = self.stub.upload_file(file).value
@@ -194,7 +195,8 @@ class RequestDispatcher:
                         del file_changes[file_part.hash]
                 # writing changes that occurred in the end of the file
                 timestamp = Timestamp()
-                timestamp.FromSeconds(int(os.stat(event.src_path).st_mtime))
+                date_time = datetime.datetime.fromtimestamp(os.stat(event.src_path).st_mtime)
+                timestamp.FromSeconds(int(date_time.timestamp()))
                 self.stub.sync_file(
                     file_sync_pb2.FileSyncRequest(user_id="1", file_id=file_id,
                                                   parts=file_changes.values(), last_modified=timestamp))

@@ -33,6 +33,24 @@ class DirectoryHandler:
     def start(self):
         while True:
             time.sleep(self.timeout)
+            for file in self.local_db.get_all_files():
+                filename = file['name']
+                try:
+                    metadata = self.stub.get_file_metadata(
+                        file_sync_pb2.FileRequest(file_id=file['id'], user_id="1"))
+                except Exception as e:
+                    metadata = None
+                if not metadata:
+                    os.remove(filename)
+                    self.local_db.delete_record(file['name'])
+                elif not os.path.exists(filename):
+                    self.logger.info(f"Deleted file: {filename}")
+                    self.queue.put(Event(
+                        type=EventType.DELETED,
+                        time=datetime.datetime.now(),
+                        src_path=filename
+                    ))
+
             for root, dirs, files in os.walk(self.directory):
                 for file in files:
                     file_path = os.path.join(root, file)
@@ -76,12 +94,3 @@ class DirectoryHandler:
                                 ))
 
                     # Checking what file got deleted
-                    for file in self.local_db.get_all_files():
-                        filename = file['name']
-                        if not os.path.exists(filename):
-                            self.logger.info(f"Deleted file: {filename}")
-                            self.queue.put(Event(
-                                type=EventType.DELETED,
-                                time=datetime.datetime.now(),
-                                src_path=filename
-                            ))
