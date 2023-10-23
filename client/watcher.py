@@ -9,6 +9,7 @@ import time
 from queue import Queue
 
 import grpc
+from google.protobuf import wrappers_pb2 as wrappers
 
 from database import ClientDatabase
 from models.event import Event, EventType
@@ -66,6 +67,7 @@ class DirectoryHandler:
                         time=datetime.datetime.now(),
                         src_path=filename
                     ))
+
             # Monitoring changes from the client
             for root, dirs, files in os.walk(self.directory):
                 for file in files:
@@ -108,3 +110,12 @@ class DirectoryHandler:
                                     time=datetime.datetime.now(),
                                     src_path=file_path
                                 ))
+
+            file_list = self.stub.get_file_list(wrappers.StringValue(value="1"))
+            for file in file_list.files:
+                if not self.local_db.get_file_by_id(file.file_id):
+                    self.queue.put(Event(
+                        type=EventType.DOWNLOAD,
+                        time=datetime.datetime.now(),
+                        src_path=file.file_id
+                    ))
