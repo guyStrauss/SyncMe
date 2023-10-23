@@ -89,11 +89,11 @@ class RequestDispatcher:
 
     def sync_file_from_server(self, event: Event):
         """
-        Sync the file from the server. (download the file)
+        Sync the file from the server. (download only the diff)
         """
         # calc the diff between the server and the client
         local_file_parts = []
-        file_id = self.local_db.get_file(event.src_path)["id"]
+        file_id = self.local_db.get_file_by_name(event.src_path)["id"]
         with open(event.src_path, "rb") as file:
             for i, block in zip_longest(range(0, os.stat(event.src_path).st_size, BLOCK_SIZE),
                                         self.stub.get_file_hashes(
@@ -164,7 +164,7 @@ class RequestDispatcher:
         """
         Handle the file deleted event.
         """
-        file_info = self.local_db.get_file(event.src_path)
+        file_info = self.local_db.get_file_by_name(event.src_path)
         if not file_info:
             return
         result = self.stub.delete_file(file_sync_pb2.FileRequest(user_id="1", file_id=file_info["id"])).value
@@ -177,7 +177,7 @@ class RequestDispatcher:
         """
         Handle the file modified event.
         """
-        file_info = self.local_db.get_file(event.src_path)
+        file_info = self.local_db.get_file_by_name(event.src_path)
         file_id = file_info["id"]
         file_changes = {}
         file_offset = 0
@@ -214,6 +214,6 @@ class RequestDispatcher:
         """
         Handle the file moved event.
         """
-        file_id = self.local_db.get_file(event.src_path)["id"]
+        file_id = self.local_db.get_file_by_name(event.src_path)["id"]
         self.local_db.update_file_name(event.src_path, event.dest_path)
         self.stub.update_file_name(file_sync_pb2.UpdateFileName(user_id="1", file_id=file_id, new_name=event.dest_path))

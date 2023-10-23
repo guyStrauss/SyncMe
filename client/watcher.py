@@ -19,10 +19,20 @@ from protos import file_sync_pb2_grpc
 class DirectoryHandler:
 
     def __init__(self, queue: Queue, directory: str, timeout: int = 1):
+        """
+        :param queue: The queue to put the events in.
+        :type queue: Queue
+        :param directory: The directory to watch.
+        :type directory: str
+        :param timeout: The timeout to check for changes.
+        :type timeout: int
+
+        """
         self.queue = queue
         self.directory = directory
         self.timeout = timeout
         self.local_db = ClientDatabase()
+        # Setting the grpc channel to allow large files
         options = [
             ('grpc.max_send_message_length', 1024 * 1024 * 1024),
             ('grpc.max_receive_message_length', 1024 * 1024 * 1024)]
@@ -31,8 +41,14 @@ class DirectoryHandler:
         self.logger = logging.getLogger(__name__)
 
     def start(self):
+        """
+        Start the directory handler. and watch the directory changes, and monitor changes from the server
+        The reason we are monitoring the server is that the server can change the file. resulting in deletion
+        of the file.
+        """
         while True:
             time.sleep(self.timeout)
+            # Checking what file got deleted from the server before checking changes from the client
             for file in self.local_db.get_all_files():
                 filename = file['name']
                 try:
@@ -50,11 +66,11 @@ class DirectoryHandler:
                         time=datetime.datetime.now(),
                         src_path=filename
                     ))
-
+            # Monitoring changes from the client
             for root, dirs, files in os.walk(self.directory):
                 for file in files:
                     file_path = os.path.join(root, file)
-                    if not self.local_db.get_file(file_path):
+                    if not self.local_db.get_file_by_name(file_path):
                         with open(file_path, 'rb') as f:
                             file_hash = hashlib.sha256(f.read()).hexdigest()
                             if self.local_db.get_file_by_hash(file_hash):
@@ -74,7 +90,7 @@ class DirectoryHandler:
                             src_path=file_path
                         ))
                     else:
-                        if os.stat(file_path).st_mtime > self.local_db.get_file(file_path)['timestamp']:
+                        if os.stat(file_path).st_mtime > self.local_db.get_file_by_name(file_path)['timestamp']:
                             self.logger.info(f"Modified file: {file_path}")
                             self.queue.put(Event(
                                 type=EventType.MODIFIED,
@@ -82,7 +98,7 @@ class DirectoryHandler:
                                 src_path=file_path
                             ))
                         else:
-                            file_id = self.local_db.get_file(file_path)['id']
+                            file_id = self.local_db.get_file_by_name(file_path)['id']
                             version = self.local_db.get_file_version(file_id)
                             if version < self.stub.get_file_metadata(
                                     file_sync_pb2.FileRequest(file_id=file_id, user_id="1")).version:
@@ -92,5 +108,3 @@ class DirectoryHandler:
                                     time=datetime.datetime.now(),
                                     src_path=file_path
                                 ))
-
-                    # Checking what file got deleted

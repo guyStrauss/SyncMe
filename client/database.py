@@ -14,7 +14,7 @@ class ClientDatabase:
             {'id': file_id, 'name': file_name, 'hash': file_hash, 'timestamp': file_timestamp,
              "version": version})
 
-    def get_file(self, file_name):
+    def get_file_by_name(self, file_name):
         query = tinydb.Query()
         return self.table.get(tinydb.Query().name == file_name)
 
@@ -41,6 +41,9 @@ class ClientDatabase:
         return self.table.all()
 
     def get_file_by_hash(self, file_hash):
+        """
+        Get the file by hash. used for renaming situations.
+        """
         return self.table.get(tinydb.Query().hash == file_hash)
 
     def increment_file_version(self, file_id):
