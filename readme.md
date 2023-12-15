@@ -4,17 +4,19 @@
 
 `By Guy Strauss (207253899)`
 
-## Table of Contents
 
-- [Introduction](#introduction)
+## תוכן עניינים
+ - [הקדמה](##הקדמה)
 
-## Introduction
-
-```plantuml
-@startuml
-Client -> Server : Give me a list of files in the server
-Server -> Client : Here is the list of files
-
-@enduml
-
-```
+## הקדמה
+## דרישות קדם
+## בחינת פתרונות אפשריים
+## איך הפרויקט בנוי
+### CI/CD
+## הוראות שימוש
+### הקמת השרת
+### צד לקוח
+## ארכיטקטורת הפיתרון
+### צד שרת
+### צד לקוח
+## פערים במצב הקיים
