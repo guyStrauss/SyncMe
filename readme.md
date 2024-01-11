@@ -66,6 +66,8 @@
 1.  `<python client/main <DIRECTORY_TO_WATCH`
 ## ארכיטקטורת הפיתרון
 ### צד שרת
+#### כללי
+צד הרשת הוא stateless. משמע אין משמעות לסדר הפניות. משום שהשרת מושך את הנתונים שהוא מחזיר מבסיסי הנתונים שיתוארו בהמשך.
 > [!important]
 > בעת הסקירה, נתייחס למבני הנתונים בעוד רכיב שמופרד מלוגיקת השרת
 #### סקירה כללית
@@ -77,14 +79,14 @@
 
 
 
-מטרת מבני נתונים זה הוא לשמור את הקבצים. עבור כל לקוח במערכת. נוצר קובץ zip שבתוכו כל הקבצים של הלקוח, שמם של הקבצים הוא ערך ה-sha256 שלהם. מבני הנתונים תומך בקריאה ובכתיבה גם לחלקים של קובץ ולא לכולו
+מטרת מבני נתונים זה הוא לשמור את הקבצים. עבור כל לקוח במערכת. נוצר קובץ zip שבתוכו כל הקבצים של הלקוח, שמם של הקבצים הוא ערך ה-sha256 שלהם. מבני הנתונים תומך בקריאה ובכתיבה גם לחלקים של קובץ ולא לכולו.
 #### Metadata Database
 ![metadata_database](https://github.com/guyStrauss/SyncMe/assets/11578138/06ef4716-5297-4d4d-9222-0239e25cd4e1)
 
 
 
 
-מטרת הרכיב הזה היא לשמור את כל המידע שלא קשור לתוכן הקובץ. כיום המימוש הוא מעל mongo-db משום שהוא עובד בצורה נוחה מאוד עם jsons. אך אין זאת בעיה בכלל להחליף את מבנה הנתונים הקיים באחר כל עוד שומרים על מימוש כל הפונקציות הנ״ל
+מטרת הרכיב הזה היא לשמור את כל המידע שלא קשור לתוכן הקובץ. כיום המימוש הוא מעל mongo-db משום שהוא עובד בצורה נוחה מאוד עם jsons (מה שpydantic מוציא). אך אין זאת בעיה בכלל להחליף את מבנה הנתונים הקיים באחר כל עוד שומרים על מימוש כל הפונקציות הנ״ל
 ##### Medatada Database Entry
 כל רשומה מחזיקה בתוכה את מבנה הנתונים הבא
 ![inserted_file_metadata](https://github.com/guyStrauss/SyncMe/assets/11578138/7d68e700-1e5c-45e3-86e8-f324d2f700c4)
@@ -95,12 +97,63 @@
 > [!important]
 > השדה הכי חשוב פה `version`. ככה אנו יודעים להשוות עם הלקוח למי יש את הקובץ העדכני ביותר ולהסתנכרן לפי השינויים הרלוונטים
 השדה `id` מציין את מספר הזהות של הרשומה, ולא של המשתמש. והרשימה `hash_list` מכילה את ערך פונקציית הריבוב עבור בלוקים של הקובץ ( 250kb)
+#### File Sync Servicer
+![file_sync_servicer](https://github.com/guyStrauss/SyncMe/assets/11578138/a88e58d4-8dd3-4cef-bbbe-e2da549570a1)
+עכשיו, לאחר הסקירה של שני הרכיבים. השלישי קל להסברה. הוא פשוט מחבר בין שניהם.
 
+### צד לקוח
+צד הלקוח הוא קצת יותר מורכב. משום שהוא צריך לשמור טבלה משלו עבור עץ התיקיות. נציד סרטוט סמכטי של אופן פעולתו. ואז נדון בהרחבה על כל רכיב
+![image](https://github.com/guyStrauss/SyncMe/assets/11578138/16bcfdb7-57c0-4cc0-8a95-922f746dcfcb)
+ה Dispatcher והWatcher רצים כל אחד ב Thread אחר.
+#### Internal DB
+מאחורי הקלעים, יש שימוש בספרייה `tinyDb` ספריית פייתון נהדרת לדברים כאלה. נציד את כל הפונקציות שמבנה הנתונים תומך בו
+![internal_db](https://github.com/guyStrauss/SyncMe/assets/11578138/1016163c-3c57-4539-a8d2-81128e5959db)
+##### Schema
+```python
+{'id': file_id, 'name': file_name, 'hash': file_hash, 'timestamp': file_timestamp,
+             "version": version}
+```
+#### Watcher
+לולאה שרצה כל 10 שניות, ואחראית על ״דיווח״ שינוים ל-dispatcher.
+##### Algorithem
+```
+- File Deletion Check (Server-side):
 
+  It iterates through files stored in the local database.
+  For each file, it queries the server for metadata.
+  If the metadata is not found (file deleted on the server), it removes the file locally and updates the local database.
+  If the file doesn't exist locally but is present in the server metadata, it logs the deletion and adds a corresponding event to the queue.
+  Local Changes Monitoring:
 
+- It traverses the specified directory using os.walk() to find files.
+ For each file, it checks if the file is already in the local database.
+ If not, it's considered a new file. It calculates its hash and checks if a file with the same hash exists (indicating a file rename). If so, it logs the rename and adds an event to the queue.
+ If the file is not in the local database, it logs and queues an event for a new file.
+ If the file is already in the local database, it checks if it has been modified locally. If so, it logs and adds an event to the queue.
+ If the file hasn't been modified locally, it checks for server sync and adds an event to the queue if needed.
+- Server File Availability Check:
 
+It queries the server for a list of files and checks if each file is already in the local database.
+If not, it queues an event for downloading the file.
+```
+#### Dispatcher
+אחראי על קבלת הוראה חדשה מהwatcher. ולעשות אותה.
+![dispatcher](https://github.com/guyStrauss/SyncMe/assets/11578138/2127690b-a2a3-4464-ad55-b991fa761d1a)
 
 ### פרוטוקול
-### צד שרת
-### צד לקוח
+מימוש הפרוטוקל נעשה באמצעות `grpc`. למי שלא בקיא. הנה כמה משפטים מעמוד הפרויקט הראשי
+> In gRPC, a client application can directly call a method on a server application on a different machine as if it were a local object, making it easier for you to create distributed applications and services
+
+[GRPC Intro](https://grpc.io/docs/what-is-grpc/introduction/)
+
+כלומר, עלינו רק להגדיר מהם הפונקציות. ובאמצעות grpc ו[protobuf](https://grpc.io/docs/what-is-grpc/introduction/)
+#### הגדרת הפרוטוקול
+להתרשמות מהגדרת הפרוטוקול. ניתן להסתכל בקובץ [הזה](/protos/file_sync.proto) אך בגדול, מוגדרות שם כל שמות הפוקנציות ב file sync servicer
+
+
+### סמכת זרימה בין הרשת ללקוח
+
+### בדיקות
+#### צד שרת
+#### צד לקוח
 ## פערים במצב הקיים
