@@ -79,7 +79,8 @@
 
 מטרת מבני נתונים זה הוא לשמור את הקבצים. עבור כל לקוח במערכת. נוצר קובץ zip שבתוכו כל הקבצים של הלקוח, שמם של הקבצים הוא ערך ה-sha256 שלהם. מבני הנתונים תומך בקריאה ובכתיבה גם לחלקים של קובץ ולא לכולו
 #### Metadata Database
-![metadata_database](https://github.com/guyStrauss/SyncMe/assets/11578138/ad5dd020-e717-4591-ba1d-9242d7d5c650)
+![metadata_database](https://github.com/guyStrauss/SyncMe/assets/11578138/06ef4716-5297-4d4d-9222-0239e25cd4e1)
+
 
 
 
