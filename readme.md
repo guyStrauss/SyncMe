@@ -70,20 +70,31 @@
 > בעת הסקירה, נתייחס למבני הנתונים בעוד רכיב שמופרד מלוגיקת השרת
 #### סקירה כללית
 ![sync-me_overview drawio (1)](https://github.com/guyStrauss/SyncMe/assets/11578138/ab6b0d68-5346-42db-9382-13e365ba3f8b)
+
 כי שניתן לראות בדיאגרמה, צד השרת מסתמך על שני שרתים. אחד מבוסס קבצים בשביל לשמור את הקבצים עצמם. והשני בשביל לשמור את המידע הנוסף. נסביר בהרחבה כל אחד מהרכיבים
 #### File Database
-![image](https://github.com/guyStrauss/SyncMe/assets/11578138/440af457-3c60-41c5-a137-eef6dd5415a1)
+![storage_database py](https://github.com/guyStrauss/SyncMe/assets/11578138/dadc238b-896f-4249-a1c3-559ae1f41939)
+
+
+
 מטרת מבני נתונים זה הוא לשמור את הקבצים. עבור כל לקוח במערכת. נוצר קובץ zip שבתוכו כל הקבצים של הלקוח, שמם של הקבצים הוא ערך ה-sha256 שלהם. מבני הנתונים תומך בקריאה ובכתיבה גם לחלקים של קובץ ולא לכולו
 #### Metadata Database
-![image](https://github.com/guyStrauss/SyncMe/assets/11578138/8d513866-c03f-4558-95a2-96f1636cab78)
+![metadata_database](https://github.com/guyStrauss/SyncMe/assets/11578138/ad5dd020-e717-4591-ba1d-9242d7d5c650)
+
+
+
 מטרת הרכיב הזה היא לשמור את כל המידע שלא קשור לתוכן הקובץ. כיום המימוש הוא מעל mongo-db משום שהוא עובד בצורה נוחה מאוד עם jsons. אך אין זאת בעיה בכלל להחליף את מבנה הנתונים הקיים באחר כל עוד שומרים על מימוש כל הפונקציות הנ״ל
 ##### Medatada Database Entry
 כל רשומה מחזיקה בתוכה את מבנה הנתונים הבא
-![image](https://github.com/guyStrauss/SyncMe/assets/11578138/d0988d7e-4b66-42cb-b5fd-ee7f075cc827)
+![inserted_file_metadata](https://github.com/guyStrauss/SyncMe/assets/11578138/7d68e700-1e5c-45e3-86e8-f324d2f700c4)
+![file_part_hash](https://github.com/guyStrauss/SyncMe/assets/11578138/b5e91aa3-672e-4293-b88e-fabe5a31e63a)
+
+
+
 > [!important]
 > השדה הכי חשוב פה `version`. ככה אנו יודעים להשוות עם הלקוח למי יש את הקובץ העדכני ביותר ולהסתנכרן לפי השינויים הרלוונטים
 השדה `id` מציין את מספר הזהות של הרשומה, ולא של המשתמש. והרשימה `hash_list` מכילה את ערך פונקציית הריבוב עבור בלוקים של הקובץ ( 250kb)
-![image](https://github.com/guyStrauss/SyncMe/assets/11578138/04af13d4-25fa-489c-91d9-3001bb3e0a07)
+
 
 
 
