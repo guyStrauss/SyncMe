@@ -123,9 +123,9 @@
   For each file, it queries the server for metadata.
   If the metadata is not found (file deleted on the server), it removes the file locally and updates the local database.
   If the file doesn't exist locally but is present in the server metadata, it logs the deletion and adds a corresponding event to the queue.
-  Local Changes Monitoring:
+- Local Changes Monitoring:
 
-- It traverses the specified directory using os.walk() to find files.
+ It traverses the specified directory using os.walk() to find files.
  For each file, it checks if the file is already in the local database.
  If not, it's considered a new file. It calculates its hash and checks if a file with the same hash exists (indicating a file rename). If so, it logs the rename and adds an event to the queue.
  If the file is not in the local database, it logs and queues an event for a new file.
