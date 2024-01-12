@@ -98,7 +98,10 @@ https://github.com/guyStrauss/SyncMe/assets/11578138/023f96ba-ca6e-4eb1-b938-a8f
 4. הריצו את `file_sync_servicer`
 #### הרצה באמצעות docker-compose
 1. הריצו `docker-compose up -d`
+2. בדקו שהכל הורם כשורה.
 ### צד לקוח
+אם השרת שלכם לא רץ על המחשב, יש לשנות את השורה הבאה בקבצים watcher וdispatcher
+`channel = grpc.insecure_channel('<YOUR_ADDRESS>:50051', options=options)`
 1.  `<python client/main <DIRECTORY_TO_WATCH`
 ## ארכיטקטורת הפיתרון
 ### צד שרת
