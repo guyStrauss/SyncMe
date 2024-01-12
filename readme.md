@@ -172,7 +172,7 @@ https://github.com/guyStrauss/SyncMe/assets/11578138/023f96ba-ca6e-4eb1-b938-a8f
 
 
 ### סמכת זרימה בין הרשת ללקוח
-הסרטוט הבא מתאר סמכת זרימה סטנדרטית.
+הסרטוט הבא מתאר סמכת זרימה סטנדרטית, של שנויי קבצים.
 ![image](https://github.com/guyStrauss/SyncMe/assets/11578138/56f0fd4a-7558-4b89-b385-f0a6014f507d)
 
 ### בדיקות
