@@ -10,6 +10,10 @@
 
 ## סרטון קצר
 
+https://github.com/guyStrauss/SyncMe/assets/11578138/023f96ba-ca6e-4eb1-b938-a8f0f970b8f0
+
+
+
 ## הקדמה
 התוכנה SyncMe מטרתה סינכרון של תיקיות וקבצים בין מספר בלתי מוגבל של מחשבי קצה. תוך כדי שמירה על יעילות, מהירות והרמטיות המידע בין כולם.
 לאחר הגדרת התיקייה שאנו רוצים לגבות. התוכנה רצה ברגע ועושה את כל הפעולות הנ״ל מבלי לפגוע בחווית המשתמש. ותסכנרן בזמן אמת את כל השינויים הנעשים ע״י המשתמש(ים). השינויים הנתמכים הם:
@@ -105,8 +109,9 @@
 
 ### צד לקוח
 צד הלקוח הוא קצת יותר מורכב. משום שהוא צריך לשמור טבלה משלו עבור עץ התיקיות. נציד סרטוט סמכטי של אופן פעולתו. ואז נדון בהרחבה על כל רכיב
-![image](https://github.com/guyStrauss/SyncMe/assets/11578138/16bcfdb7-57c0-4cc0-8a95-922f746dcfcb)
-ה Dispatcher והWatcher רצים כל אחד ב Thread אחר.
+![image](https://github.com/guyStrauss/SyncMe/assets/11578138/6304f084-4893-4397-a8ed-4a3d11c1290b)
+
+ה-Watcher קורא לDispatcher
 #### Internal DB
 מאחורי הקלעים, יש שימוש בספרייה `tinyDb` ספריית פייתון נהדרת לדברים כאלה. נציד את כל הפונקציות שמבנה הנתונים תומך בו
 ![internal_db](https://github.com/guyStrauss/SyncMe/assets/11578138/1016163c-3c57-4539-a8d2-81128e5959db)
@@ -118,26 +123,9 @@
 #### Watcher
 לולאה שרצה כל 10 שניות, ואחראית על ״דיווח״ שינוים ל-dispatcher.
 ##### Algorithem
-```
-- File Deletion Check (Server-side):
+![image](https://github.com/guyStrauss/SyncMe/assets/11578138/8cc0415a-7c3b-4dad-b088-0511a5c616c4)
 
-  It iterates through files stored in the local database.
-  For each file, it queries the server for metadata.
-  If the metadata is not found (file deleted on the server), it removes the file locally and updates the local database.
-  If the file doesn't exist locally but is present in the server metadata, it logs the deletion and adds a corresponding event to the queue.
-- Local Changes Monitoring:
 
- It traverses the specified directory using os.walk() to find files.
- For each file, it checks if the file is already in the local database.
- If not, it's considered a new file. It calculates its hash and checks if a file with the same hash exists (indicating a file rename). If so, it logs the rename and adds an event to the queue.
- If the file is not in the local database, it logs and queues an event for a new file.
- If the file is already in the local database, it checks if it has been modified locally. If so, it logs and adds an event to the queue.
- If the file hasn't been modified locally, it checks for server sync and adds an event to the queue if needed.
-- Server File Availability Check:
-
-It queries the server for a list of files and checks if each file is already in the local database.
-If not, it queues an event for downloading the file.
-```
 #### Dispatcher
 אחראי על קבלת הוראה חדשה מהwatcher. ולעשות אותה.
 ![dispatcher](https://github.com/guyStrauss/SyncMe/assets/11578138/2127690b-a2a3-4464-ad55-b991fa761d1a)
