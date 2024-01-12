@@ -152,8 +152,54 @@ If not, it queues an event for downloading the file.
 
 
 ### סמכת זרימה בין הרשת ללקוח
+הסרטוט הבא מתאר סמכת זרימה סטנדרטית.
+![image](https://github.com/guyStrauss/SyncMe/assets/11578138/56f0fd4a-7558-4b89-b385-f0a6014f507d)
 
 ### בדיקות
 #### צד שרת
+##### ServicerTests
+
+| Name                          | Purpose                                                        |
+|-------------------------------|----------------------------------------------------------------|
+| `test_upload_file`            | Tests the uploading of a file to the server.                   |
+| `test_get_file`               | Validates retrieval of a specific file from the server.        |
+| `test_does_file_exist`        | Checks if a file exists on the server.                         |
+| `test_file_doesnt_exist`      | Verifies that a non-existent file is correctly identified.     |
+| `test_check_version`          | Tests version checking of a file on the server.                |
+| `test_check_version_doesnt_exist` | Checks behavior when a version doesn't exist.              |
+| `test_delete_file`            | Tests the deletion of a file from the server.                  |
+| `test_delete_file_doesnt_exist` | Ensures correct handling of deleting a non-existent file.   |
+| `test_get_files`              | Tests retrieval of a list of files from the server.            |
+| `test_sync_file`              | Tests the synchronization of a file with the server.           |
+| `test_sync_file_eof`          | Tests file synchronization with EOF changes.                   |
+| `test_sync_file_start`        | Placeholder (no implementation).                               |
+| `test_update_name`            | Tests updating the name of a file on the server.               |
+| `test_sync_file_server`       | Tests file synchronization from the server.                    |
+
+##### TestStorage
+
+| Name                     | Purpose                                                       |
+|--------------------------|---------------------------------------------------------------|
+| `test_upload`            | Tests uploading a file to storage.                            |
+| `test_get_file`          | Verifies retrieval of a file from storage.                    |
+| `test_get_file_offset`   | Tests getting a file from storage with a specific offset.     |
+| `test_get_file_hashes`   | Validates retrieval of file hashes from storage.              |
+| `test_delete_file`       | Tests deletion of a file from storage.                        |
+| `test_sync_file`         | Tests synchronization of a file with changes in storage.      |
+
+##### MongoTests
+
+| Name                    | Purpose                                                         |
+|-------------------------|-----------------------------------------------------------------|
+| `test_insert`           | Tests inserting file metadata into the database.                |
+| `test_update`           | Tests updating file metadata in the database.                   |
+| `test_get_all_metadata` | Tests retrieval of all metadata records for a user.             |
+| `test_update_hashes`    | Tests updating file part hashes in the metadata.                |
+| `test_get_metadata`     | Validates retrieval of specific file metadata from the database.|
+| `test_delete`           | Tests deletion of metadata from the database.                   |
+
+
+
 #### צד לקוח
+בדיקות נעשו בצורה ידנית.
 ## פערים במצב הקיים
