@@ -2,11 +2,12 @@
 This module is for the client database. storing files_id
 """
 import tinydb
+import os
 
 
 class ClientDatabase:
-    def __init__(self):
-        db = tinydb.TinyDB('client_db.json')
+    def __init__(self, db_name):
+        db = tinydb.TinyDB('client_db' + os.path.split(db_name)[-1] + '.json')
         self.table = db.table('files')
 
     def insert_file(self, file_id, file_name, file_hash, file_timestamp, version=0):

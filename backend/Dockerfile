@@ -15,3 +15,5 @@ CMD ["python3.10", "file_sync_servicer.py"]
 FROM base AS tests
 CMD ["python3.10", "-m", "unittest", "discover", "-s", "tests"]
 
+
+

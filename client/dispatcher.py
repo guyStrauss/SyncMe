@@ -28,17 +28,18 @@ class RequestDispatcher:
     Uses queue to get requests from the
     """
 
-    def __init__(self, queue: Queue[Event]):
+    def __init__(self, directory: str):
         """
         :param queue: The queue to get requests from.
         """
-        self.queue = queue
+        self.directory = directory
         options = [
             ('grpc.max_send_message_length', 1024 * 1024 * 1024),
             ('grpc.max_receive_message_length', 1024 * 1024 * 1024)]
         channel = grpc.insecure_channel('localhost:50051', options=options)
         self.stub = file_sync_pb2_grpc.FileSyncStub(channel)
-        self.local_db = ClientDatabase()
+        self.local_db = ClientDatabase(directory)
+        os.chdir(self.directory)
         self.handlers = {
             EventType.CREATED: self.file_created,
             EventType.DELETED: self.file_deleted,
@@ -47,17 +48,6 @@ class RequestDispatcher:
             EventType.MOVED: self.file_moved,
             EventType.SERVER_SYNC: self.sync_file_from_server,
         }
-
-    def run(self):
-        """
-        This function runs the dispatcher.
-        run in a separate thread.
-        """
-        while True:
-            request = self.queue.get()  # type: Event
-            print(f"Got request: {request}")
-            # noinspection PyArgumentList
-            self.handlers[request.type](request)
 
     def startup(self):
         """
@@ -75,7 +65,7 @@ class RequestDispatcher:
                 version = self.local_db.get_file_version(file.file_id)
                 filename = self.local_db.get_file_by_id(file.file_id)["name"]
                 if version > file.version:
-                    self.queue.put(Event(
+                    self.file_modified(Event(
                         type=EventType.MODIFIED,
                         time=datetime.datetime.now(),
                         src_path=filename
@@ -98,28 +88,29 @@ class RequestDispatcher:
             for i, block in zip_longest(range(0, os.stat(event.src_path).st_size, BLOCK_SIZE),
                                         self.stub.get_file_hashes(
                                             file_sync_pb2.FileRequest(user_id="1", file_id=file_id)),
-                                        fillvalue=file_sync_pb2.Block(hash="", offset=0, size=0)):
+                                        fillvalue=0):
                 file.seek(i)
                 file_part_content = file.read(BLOCK_SIZE)
                 part_hash = hashlib.sha256(file_part_content).hexdigest()
                 if part_hash != block.hash:
-                    local_file_parts.append(FilePart(offset=i, size=len(file_part_content), data=b""))
+                    local_file_parts.append(FilePart(offset=i, size=BLOCK_SIZE, data=b""))
         # download the diff
         file = self.stub.sync_file_server(
             file_sync_pb2.SyncFileServerRequest(user_id="1", file_id=file_id, parts=local_file_parts))
-        with open(event.src_path, "ab") as file_writer:
-            for part in file.parts:
-                file_writer.seek(part.offset)
-                file_writer.write(part.data)
-        # Change last modified time to the server's last modified time
-        timestamp = datetime.datetime.fromtimestamp(file.last_modified.seconds).timestamp()
-        self.local_db.update_file_timestamp(event.src_path, timestamp)
-        self.local_db.increment_file_version(file_id)
-        # Update the hash of the file
-        with open(event.src_path, "rb") as file:
-            new_hash = hashlib.sha256(file.read()).hexdigest()
-        os.utime(event.src_path, (timestamp, timestamp))
-        self.local_db.update_file_hash(event.src_path, new_hash)
+        if len(file.parts) > 0:
+            with open(event.src_path, "wb") as file_writer:
+                for part in file.parts:
+                    file_writer.seek(part.offset)
+                    file_writer.write(part.data)
+            # Change last modified time to the server's last modified time
+            timestamp = datetime.datetime.fromtimestamp(file.last_modified.seconds).timestamp()
+            self.local_db.update_file_timestamp(file_id, timestamp)
+            self.local_db.increment_file_version(file_id)
+            # Update the hash of the file
+            with open(event.src_path, "rb") as file:
+                new_hash = hashlib.sha256(file.read()).hexdigest()
+            os.utime(event.src_path, (timestamp, timestamp))
+            self.local_db.update_file_hash(file_id, new_hash)
 
     def download_file(self, event: Event):
         """
@@ -128,11 +119,11 @@ class RequestDispatcher:
         logging.info(f"Downloading file with id: {event.src_path}")
         file = self.stub.get_file(file_sync_pb2.FileRequest(user_id="1", file_id=event.src_path))
         # Create the directory
-        os.makedirs(os.path.dirname(file.name), exist_ok=True)
-        with open(file.name, "wb") as file_writer:
+        os.makedirs(os.path.dirname(os.path.join(self.directory, file.name)), exist_ok=True)
+        with open(os.path.join(self.directory, file.name), "wb") as file_writer:
             file_writer.write(file.data)
         timestamp = datetime.datetime.fromtimestamp(file.last_modified.seconds).timestamp()
-        os.utime(file.name, (timestamp, timestamp))
+        os.utime(os.path.join(self.directory, file.name), (timestamp, timestamp))
         self.local_db.insert_file(event.src_path, file.name, file.hash, timestamp, file.version)
 
     def file_created(self, event: Event):
@@ -217,3 +208,14 @@ class RequestDispatcher:
         file_id = self.local_db.get_file_by_name(event.src_path)["id"]
         self.local_db.update_file_name(event.src_path, event.dest_path)
         self.stub.update_file_name(file_sync_pb2.UpdateFileName(user_id="1", file_id=file_id, new_name=event.dest_path))
+        self.local_db.increment_file_version(file_id)
+
+    def rename_file(self, file_id):
+        old_name = self.local_db.get_file_by_id(file_id)["name"]
+        new_name = self.stub.get_file_metadata(file_sync_pb2.FileRequest(user_id="1", file_id=file_id)).name
+        os.rename(old_name, new_name)
+        self.local_db.update_file_name(old_name, new_name)
+        self.local_db.increment_file_version(file_id)
+
+
+
